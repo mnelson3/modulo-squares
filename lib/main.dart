@@ -1,309 +1,141 @@
-
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'leaderboard_service.dart';
 
 void main() {
-  runApp(ModuloApp());
+  runApp(const ModuloApp());
 }
 
 class ModuloApp extends StatelessWidget {
+  const ModuloApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Modulo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: ModuloGame(),
+    return const MaterialApp(
+      title: 'Modulo Game',
+      home: GameScreen(),
     );
   }
 }
 
-class ModuloGame extends StatefulWidget {
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
+
   @override
-  _ModuloGameState createState() => _ModuloGameState();
+  State<GameScreen> createState() => _GameScreenState();
 }
 
-class _ModuloGameState extends State<ModuloGame> {
-  final Random _random = Random();
+class _GameScreenState extends State<GameScreen> {
+  static const int gridSize = 4;
   List<List<int?>> grid = [];
-  int difficultyLevel = 1; // 1 (easy) to 100 (hard)
-  int score = 0;
-  int highScore = 0;
-
-  int get gridSize => 4 + ((difficultyLevel - 1) ~/ 10).clamp(0, 6); // From 4x4 to 10x10
 
   @override
   void initState() {
     super.initState();
-    _loadHighScore();
     _initializeGrid();
   }
 
-  Future<void> _loadHighScore() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      highScore = prefs.getInt('highScore') ?? 0;
-    });
-  }
-
-  Future<void> _saveHighScore() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('highScore', highScore);
-  }
-
   void _initializeGrid() {
-    int maxValue = (difficultyLevel * 1000).clamp(1, 100000);
+    grid = List.generate(gridSize,
+        (_) => List.generate(gridSize, (_) => _randomValue()));
+  }
+
+  int _randomValue() => 1 + (10 + (100 * gridSize)) ~/ gridSize;
+
+  void _move(int dx, int dy) {
     setState(() {
-      grid = List.generate(
-        gridSize,
-        (_) => List.generate(gridSize, (_) => _random.nextInt(maxValue) + 1),
-      );
-      score = 0;
+      for (int row = (dy > 0 ? gridSize - 2 : 1);
+          dy != 0 && row >= 0 && row < gridSize;
+          row += (dy > 0 ? -1 : 1)) {
+        for (int col = 0; col < gridSize; col++) {
+          _tryMove(row, col, dx, dy);
+        }
+      }
+
+      for (int col = (dx > 0 ? gridSize - 2 : 1);
+          dx != 0 && col >= 0 && col < gridSize;
+          col += (dx > 0 ? -1 : 1)) {
+        for (int row = 0; row < gridSize; row++) {
+          _tryMove(row, col, dx, dy);
+        }
+      }
     });
   }
 
-  void _move(int row, int col, int dRow, int dCol) {
-    int newRow = row + dRow;
-    int newCol = col + dCol;
-
-    if (_isInBounds(newRow, newCol)) {
-      int? fromValue = grid[row][col];
-      int? toValue = grid[newRow][newCol];
-
-      if (fromValue != null && toValue != null && fromValue <= toValue) {
-        int result = toValue % fromValue;
-        setState(() {
-          grid[newRow][newCol] = result != 0 ? result : null;
-          grid[row][col] = null;
-          score += 1;
-          if (score > highScore) {
-            highScore = score;
-            _saveHighScore();
-          }
-        });
-        _checkWinLose();
-      }
-    }
-  }
-
-  bool _isInBounds(int row, int col) {
-    return row >= 0 && row < gridSize && col >= 0 && col < gridSize;
-  }
-
-  void _checkWinLose() {
-    bool isWin = grid.every((row) => row.every((cell) => cell == null));
-    if (isWin) {
-      _showEndDialog('You Win!', 'Congratulations, you cleared the board! Score: \$score');
+  void _tryMove(int row, int col, int dx, int dy) {
+    int newRow = row + dy;
+    int newCol = col + dx;
+    if (newRow < 0 || newRow >= gridSize || newCol < 0 || newCol >= gridSize) {
       return;
     }
 
-    // Check for possible moves
-    bool hasMoves = false;
-    for (int i = 0; i < gridSize; i++) {
-      for (int j = 0; j < gridSize; j++) {
-        int? current = grid[i][j];
-        if (current == null) continue;
-        for (var dir in [
-          [-1, 0], [1, 0], [0, -1], [0, 1]
-        ]) {
-          int ni = i + dir[0];
-          int nj = j + dir[1];
-          if (_isInBounds(ni, nj) && grid[ni][nj] != null && current <= grid[ni][nj]!) {
-            hasMoves = true;
-            break;
-          }
-        }
-        if (hasMoves) break;
-      }
-      if (hasMoves) break;
+    int? source = grid[row][col];
+    int? dest = grid[newRow][newCol];
+
+    if (source == null || dest == null) return;
+    if (source <= dest) {
+      int result = dest % source;
+      grid[newRow][newCol] = result == 0 ? null : result;
+      grid[row][col] = null;
     }
-
-    if (!hasMoves) {
-      _showEndDialog('Game Over', 'No more valid moves available. Score: \$score');
-    }
-  }
-
-  void _showEndDialog(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message),
-            SizedBox(height: 16),
-            if (title == 'You Win!' || title == 'Game Over')
-              _ScoreSubmissionWidget(onSubmit: (name) {
-                LeaderboardService.submitScore(name, score);
-                Navigator.of(context).pop(); // close dialog
-              }),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _initializeGrid();
-            },
-            child: Text('Play Again'),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _showLeaderboardDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Leaderboard - Top Scores'),
-        content: Container(
-          width: double.maxFinite,
-          child: LeaderboardService.buildLeaderboardWidget(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGrid() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(gridSize, (row) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(gridSize, (col) {
-            return GestureDetector(
-              onVerticalDragEnd: (details) {
-                if (details.primaryVelocity != null) {
-                  if (details.primaryVelocity! < 0) {
-                    _move(row, col, -1, 0); // Up
-                  } else if (details.primaryVelocity! > 0) {
-                    _move(row, col, 1, 0); // Down
-                  }
-                }
-              },
-              onHorizontalDragEnd: (details) {
-                if (details.primaryVelocity != null) {
-                  if (details.primaryVelocity! < 0) {
-                    _move(row, col, 0, -1); // Left
-                  } else if (details.primaryVelocity! > 0) {
-                    _move(row, col, 0, 1); // Right
-                  }
-                }
-              },
-              child: Container(
-                margin: EdgeInsets.all(2),
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: grid[row][col] != null ? Colors.blue[300] : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  grid[row][col]?.toString() ?? '',
-                  style: TextStyle(fontSize: 14, color: Colors.white),
-                ),
-              ),
-            );
-          }),
-        );
-      }),
-    );
-  }
-
-  Widget _buildDifficultySlider() {
-    return Column(
-      children: [
-        Text('Difficulty Level: \$difficultyLevel', style: TextStyle(fontWeight: FontWeight.bold)),
-        Slider(
-          value: difficultyLevel.toDouble(),
-          min: 1,
-          max: 100,
-          divisions: 99,
-          label: difficultyLevel.toString(),
-          onChanged: (double value) {
-            setState(() {
-              difficultyLevel = value.toInt();
-              _initializeGrid();
-            });
-          },
-        )
-      ],
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Modulo'),
+        title: const Text("Modulo Game"),
         actions: [
           IconButton(
-            icon: Icon(Icons.leaderboard),
-            onPressed: _showLeaderboardDialog,
-            tooltip: 'Show Leaderboard',
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() => _initializeGrid());
+            },
           )
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildDifficultySlider(),
-          SizedBox(height: 20),
-          Text('Score: \$score  High Score: \$highScore', style: TextStyle(fontSize: 16)),
-          SizedBox(height: 20),
-          Center(child: _buildGrid()),
-          SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: _initializeGrid,
-            child: Text('Restart'),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _ScoreSubmissionWidget extends StatefulWidget {
-  final Function(String) onSubmit;
-  _ScoreSubmissionWidget({required this.onSubmit});
-
-  @override
-  __ScoreSubmissionWidgetState createState() => __ScoreSubmissionWidgetState();
-}
-
-class __ScoreSubmissionWidgetState extends State<_ScoreSubmissionWidget> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: _controller,
-          decoration: InputDecoration(labelText: 'Enter your name'),
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            _move(1, 0);
+          } else {
+            _move(-1, 0);
+          }
+        },
+        onVerticalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            _move(0, 1);
+          } else {
+            _move(0, -1);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.builder(
+            itemCount: gridSize * gridSize,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: gridSize,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+            ),
+            itemBuilder: (context, index) {
+              final row = index ~/ gridSize;
+              final col = index % gridSize;
+              final value = grid[row][col];
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: value == null ? Colors.grey[300] : Colors.blue[100],
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  value?.toString() ?? '',
+                  style: const TextStyle(fontSize: 18),
+                ),
+              );
+            },
+          ),
         ),
-        SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () {
-            if (_controller.text.trim().isNotEmpty) {
-              widget.onSubmit(_controller.text.trim());
-            }
-          },
-          child: Text('Submit Score'),
-        )
-      ],
+      ),
     );
   }
 }

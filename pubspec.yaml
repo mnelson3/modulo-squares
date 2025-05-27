@@ -13,6 +13,8 @@ dependencies:
   shared_preferences: ^2.0.15
   cloud_firestore: ^4.7.0
   firebase_core: ^2.13.0
+  audioplayers: ^6.4.0
+  flutter_lints: ^6.0.0
 
 dev_dependencies:
   flutter_test:

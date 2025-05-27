@@ -1,0 +1,8 @@
+{
+    "azureML.yaml.format.printWidth": 160,
+    "xml.format.maxLineWidth": 160,
+    "editor.minimap.maxColumn": 160,
+    "dart.lineLength": 160,
+    "dart.flutterCreateAndroidLanguage": "java",
+    "editor.wordWrapColumn": 160
+}

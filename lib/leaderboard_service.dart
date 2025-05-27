@@ -23,16 +23,16 @@ class LeaderboardService {
       stream: _scoresCollection.orderBy('score', descending: true).limit(10).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Text('Error loading leaderboard');
+          return const Text('Error loading leaderboard');
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         final docs = snapshot.data!.docs;
 
         if (docs.isEmpty) {
-          return Text('No scores yet');
+          return const Text('No scores yet');
         }
 
         return ListView.builder(
@@ -43,7 +43,7 @@ class LeaderboardService {
             String player = docs[index].id;
             int score = data['score'] ?? 0;
             return ListTile(
-              leading: Text('#\${index + 1}'),
+              leading: const Text('#\${index + 1}'),
               title: Text(player),
               trailing: Text(score.toString()),
             );
