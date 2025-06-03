@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:modulo_game/main.dart';
+import 'package:modulo/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
@@ -25,5 +25,11 @@ void main() {
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
+  });
+
+  testWidgets('ModuloGame displays score and restart button', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: ModuloGame()));
+    expect(find.textContaining('Score:'), findsOneWidget);
+    expect(find.text('Restart'), findsOneWidget);
   });
 }

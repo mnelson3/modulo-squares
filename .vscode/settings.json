@@ -4,5 +4,9 @@
     "editor.minimap.maxColumn": 160,
     "dart.lineLength": 160,
     "dart.flutterCreateAndroidLanguage": "java",
-    "editor.wordWrapColumn": 160
+    "editor.wordWrapColumn": 160,
+    "cmake.ignoreCMakeListsMissing": true,
+    "prettier.printWidth": 160,
+    "yaml.format.printWidth": 160,
+    "github.copilot.nextEditSuggestions.enabled": true
 }

@@ -1,10 +1,11 @@
-// /Users/marknelson/Circus/modulo-flutter-project/lib/screens/game_screen.dart
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../widgets/grid_cell_widget.dart';
 import '../models/game_board.dart';
-import '../src/constants/app_constants.dart';
+import '../constants/app_constants.dart';
 
+/// The main game screen for Modulo.
+/// Handles grid rendering, user interaction, and game state.
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -13,16 +14,14 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late GameBoard _gameBoard; // Declare _gameBoard here
-  final int _rowCount = 4;
-  final int _colCount = 4;
+  late final GameBoard _gameBoard;
+  static const int _rowCount = 4;
+  static const int _colCount = 4;
 
-  // To track selected cell for movement
   int? _selectedRow;
   int? _selectedCol;
   int _moveCount = 0;
 
-  // For visual feedback on changed cell
   int? _justChangedRow;
   int? _justChangedCol;
 
@@ -30,79 +29,67 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void initState() {
-    super.initState(); // Call super.initState() first
+    super.initState();
     _gameBoard = GameBoard(rows: _rowCount, cols: _colCount);
     _startNewGame();
-    // Preload sounds if desired, or handle errors if files are missing
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose(); // Correctly placed in State class
+    _audioPlayer.dispose();
     super.dispose();
   }
 
-  Future<void> _playSound(String assetPath) async {
-    try {
-      await _audioPlayer.play(AssetSource(assetPath));
-    } catch (e) {
-      // ignore: avoid_print
-      print("Error playing sound $assetPath: $e");
-    }
-  }
-
+  /// Starts a new game and resets all state.
   void _startNewGame() {
     setState(() {
-      // If _gameBoard is not initialized here, ensure it's done in initState
-      if (!mounted) return; // Check if widget is still mounted
-
-      _gameBoard.populateRandomly(
-          numbersToPlace: 7, maxCellValue: 25); // Adjust as needed
+      final maxValue = GameUtils.calculateMaxValue(difficultyLevel);
+      _gameBoard.populateRandomly(numbersToPlace: 7, maxCellValue: maxValue);
       _selectedRow = null;
       _selectedCol = null;
       _moveCount = 0;
       _justChangedRow = null;
       _justChangedCol = null;
-      // _gameBoard.printBoard(); // For debugging
     });
   }
 
+  /// Handles tap on a grid cell.
   void _handleCellTap(int row, int col) {
     setState(() {
-      int? tappedValue = _gameBoard.getValue(row, col);
       if (!mounted) return;
+      final tappedValue = _gameBoard.getValue(row, col);
 
+      // Only allow selection if value is not null
       if (_selectedRow == null || _selectedCol == null) {
-        // No cell selected yet: select this one if it has a number
         if (tappedValue != null) {
           _selectedRow = row;
           _selectedCol = col;
         }
       } else {
-        // A cell is already selected (_selectedRow, _selectedCol)
+        // Ensure selected cell is valid
+        final sourceValue = _gameBoard.getValue(_selectedRow!, _selectedCol!);
+        if (sourceValue == null) {
+          _selectedRow = null;
+          _selectedCol = null;
+          return;
+        }
+
         if (_selectedRow == row && _selectedCol == col) {
-          // Tapped the same selected cell: deselect
           _selectedRow = null;
           _selectedCol = null;
         } else {
-          // Tapped a different cell: attempt to move
-          bool moveSuccessful = _gameBoard.moveCell(
-            _selectedRow!,
-            _selectedCol!,
-            row,
-            col,
-          );
-
+          final moveSuccessful = _gameBoard.moveCell(_selectedRow!, _selectedCol!, row, col);
           if (moveSuccessful) {
-            // _gameBoard.printBoard(); // For debugging
+            _moveCount++;
+            _justChangedRow = row;
+            _justChangedCol = col;
             if (_gameBoard.isBoardClear()) {
               _showGameEndDialog(
-                  // Using AppStrings for consistency, assuming it's available
-                  title: AppStrings.congratulationsTitle,
-                  message: AppStrings.boardClearedMessage);
+                title: AppStrings.congratulationsTitle,
+                message: AppStrings.boardClearedMessage,
+              );
             }
           }
-          // Always deselect after a move attempt (successful or not)
           _selectedRow = null;
           _selectedCol = null;
         }
@@ -110,9 +97,10 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  /// Shows a dialog when the game ends.
   void _showGameEndDialog({required String title, required String message}) {
+    if (!mounted) return;
     showDialog(
-      // Ensure context is valid and widget is mounted if this can be called asynchronously
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
@@ -133,26 +121,21 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  /// Returns true if the cell at [targetRow], [targetCol] is a possible move target.
   bool _isPossibleTarget(int targetRow, int targetCol) {
     if (_selectedRow == null || _selectedCol == null) return false;
-    if (_selectedRow == targetRow && _selectedCol == targetCol) {
-      return false; // Cannot be target of itself
-    }
+    if (_selectedRow == targetRow && _selectedCol == targetCol) return false;
 
-    // Check adjacency
-    bool isAdjacent = ((_selectedRow == targetRow &&
-            (_selectedCol! - targetCol).abs() == 1) ||
+    // Ensure selected cell is valid
+    final sourceValue = _gameBoard.getValue(_selectedRow!, _selectedCol!);
+    if (sourceValue == null) return false;
+
+    // Adjacency check
+    final isAdjacent = ((_selectedRow == targetRow && (_selectedCol! - targetCol).abs() == 1) ||
         (_selectedCol == targetCol && (_selectedRow! - targetRow).abs() == 1));
     if (!isAdjacent) return false;
 
-    // Check game rule: source <= target OR target is empty
-    int? sourceValue = _gameBoard.getValue(_selectedRow!, _selectedCol!);
-    int? targetValue = _gameBoard.getValue(targetRow, targetCol);
-
-    if (sourceValue == null) {
-      return false; // Should not happen if selection logic is correct
-    }
-
+    final targetValue = _gameBoard.getValue(targetRow, targetCol);
     return targetValue == null || sourceValue <= targetValue;
   }
 
@@ -166,22 +149,25 @@ class _GameScreenState extends State<GameScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _startNewGame,
             tooltip: AppStrings.newGameTooltip,
-            // Consider adding Undo button here if implemented
           )
         ],
       ),
       body: Center(
-        // Center the grid and instructions
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 20),
+            const Text('Some static text'),
+            ElevatedButton(
+              onPressed: _startNewGame,
+              child: const Text('Restart'),
+            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 _selectedRow != null
                     ? AppStrings.selectedInstruction(
-                        _gameBoard.getValue(_selectedRow!, _selectedCol!) ??
-                            0, // Handle null case for value
+                        _gameBoard.getValue(_selectedRow!, _selectedCol!) ?? 0,
                         _selectedRow!,
                         _selectedCol!)
                     : AppStrings.tapToSelectInstruction,
@@ -190,10 +176,10 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
             AspectRatio(
-              aspectRatio: 1.0, // Makes the GridView square
+              aspectRatio: 1.0,
               child: Container(
                 padding: const EdgeInsets.all(8.0),
-                margin: const EdgeInsets.all(16.0), // Margin around the grid
+                margin: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blueGrey.shade200, width: 2),
                   borderRadius: BorderRadius.circular(8),
@@ -201,26 +187,25 @@ class _GameScreenState extends State<GameScreen> {
                 child: GridView.builder(
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _rowCount * _colCount,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: _colCount,
                     mainAxisSpacing: 4.0,
                     crossAxisSpacing: 4.0,
                   ),
                   itemBuilder: (context, index) {
-                    int row = index ~/ _colCount;
-                    int col = index % _colCount;
+                    final row = index ~/ _colCount;
+                    final col = index % _colCount;
                     return GridCellWidget(
                       value: _gameBoard.getValue(row, col),
                       isSelected: (row == _selectedRow && col == _selectedCol),
                       isPossibleTarget: _isPossibleTarget(row, col),
-                      // justChanged: (row == _justChangedRow && col == _justChangedCol), // Assuming _justChangedRow/Col are managed
+                      justChanged: (row == _justChangedRow && col == _justChangedCol),
                       onTap: () => _handleCellTap(row, col),
                     );
                   },
                 ),
               ),
             ),
-            // Display move count
             Padding(
               padding: const EdgeInsets.only(top: 20.0),
               child: Text(
@@ -229,7 +214,6 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
             // TODO: Add ad banner here if implementing ads
-            // Example: if (_adsEnabled) Container(height: 50, child: AdWidgetPlaceholder())
           ],
         ),
       ),
