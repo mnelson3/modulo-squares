@@ -7,7 +7,7 @@ import 'constants/app_constants.dart';
 import 'widgets/grid_cell_widget.dart';
 import 'models/game_board.dart';
 import 'screens/game_screen.dart';
-import 'screens/profile_screen.dart';
+import 'profile/presentation/screens/profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/leaderboard_screen.dart';
 import 'utils/game_utils.dart';
