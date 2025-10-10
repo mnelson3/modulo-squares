@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modulo/l10n/app_localizations.dart';
 import 'package:modulo/features/game/game_screen.dart';
 import 'package:modulo/core/di/service_locator.dart';
+import 'package:modulo/shared/widgets/grid_cell_widget.dart';
+import 'package:modulo/shared/models/game_board.dart';
 
 void main() {
   setUpAll(() {
@@ -44,5 +46,154 @@ void main() {
     // Verify Restart button by localized label
     final ctx = tester.element(find.byType(Scaffold));
     expect(find.text(AppLocalizations.of(ctx).restart), findsOneWidget);
+  });
+
+  group('GridCellWidget', () {
+    testWidgets('displays normal tile with value', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(value: 5),
+              isSelected: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('5'), findsOneWidget);
+      expect(find.byIcon(Icons.block), findsNothing);
+      expect(find.byIcon(Icons.star), findsNothing);
+    });
+
+    testWidgets('displays obstacle tile', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(type: TileType.obstacle),
+              isSelected: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.block), findsOneWidget);
+      expect(find.text('5'), findsNothing);
+    });
+
+    testWidgets('displays bonus tile with value and star', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(type: TileType.bonus, value: 10),
+              isSelected: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.star), findsOneWidget);
+      expect(find.text('10'), findsOneWidget);
+    });
+
+    testWidgets('shows selected state', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(value: 3),
+              isSelected: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('3'), findsOneWidget);
+      // The selected state changes the background color, but we can't easily test color in widget tests
+      // We verify the widget builds without error and displays the correct content
+    });
+
+    testWidgets('displays empty tile', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(),
+              isSelected: false,
+            ),
+          ),
+        ),
+      );
+
+      // Empty tile should not display any text or icons
+      expect(find.byType(Text), findsNothing);
+      expect(find.byType(Icon), findsNothing);
+    });
+
+    testWidgets('handles possible target state', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(value: 7),
+              isSelected: false,
+              isPossibleTarget: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('7'), findsOneWidget);
+      // isPossibleTarget doesn't change visual appearance in this implementation
+    });
+
+    testWidgets('handles just changed animation', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(value: 2),
+              isSelected: false,
+              justChanged: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('2'), findsOneWidget);
+      // justChanged triggers animation but doesn't change static appearance
+    });
+
+    testWidgets('has correct layout structure', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GridCellWidget(
+              tile: const Tile(type: TileType.bonus, value: 8),
+              isSelected: false,
+            ),
+          ),
+        ),
+      );
+
+      // Find the GridCellWidget specifically and check its descendants
+      final gridCellFinder = find.byType(GridCellWidget);
+      expect(gridCellFinder, findsOneWidget);
+
+      // Verify the widget has the expected structure within the GridCellWidget
+      final stackFinder = find.descendant(
+        of: gridCellFinder,
+        matching: find.byType(Stack),
+      );
+      expect(stackFinder, findsOneWidget);
+
+      final animatedContainerFinder = find.descendant(
+        of: gridCellFinder,
+        matching: find.byType(AnimatedContainer),
+      );
+      expect(animatedContainerFinder, findsOneWidget);
+    });
   });
 }

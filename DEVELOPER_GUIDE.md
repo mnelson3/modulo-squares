@@ -1,6 +1,6 @@
-# Modulo Game - Developer Guide
+# Modulo Squares - Developer Guide
 
-This guide provides information for developers looking to contribute to or understand the technical aspects of the Modulo Game project.
+This guide provides information for developers looking to contribute to or understand the technical aspects of the Modulo Squares project.
 
 ## 1. Introduction
 

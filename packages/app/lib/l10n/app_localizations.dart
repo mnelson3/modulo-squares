@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class AppLocalizations {
   static AppLocalizations of(BuildContext context) => Localizations.of<AppLocalizations>(context, AppLocalizations)!;
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = AppLocalizationsDelegate();
 
   String get appTitle => Intl.message('Modulo Squares', name: 'appTitle');
   String get profile => Intl.message('Profile', name: 'profile');
@@ -101,8 +101,8 @@ class AppLocalizations {
   String get moduloExampleTransformCaption => Intl.message('12 % 5 = 2 → (12 + 5) × 2 = 34; source respawns', name: 'moduloExampleTransformCaption');
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
+class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const AppLocalizationsDelegate();
 
   @override
   bool isSupported(Locale locale) => ['en'].contains(locale.languageCode);
@@ -114,5 +114,5 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
+  bool shouldReload(AppLocalizationsDelegate old) => false;
 }

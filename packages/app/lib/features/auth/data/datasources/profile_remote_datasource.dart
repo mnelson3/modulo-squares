@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../shared/models/user_profile_model.dart';
 
 abstract class ProfileRemoteDataSource {
@@ -23,7 +24,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       return null;
     } catch (e) {
       // Log error or rethrow as a custom domain exception
-      print('Error getting user profile from remote: $e');
+      debugPrint('Error getting user profile from remote: $e');
       rethrow;
     }
   }
@@ -34,7 +35,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       await _usersCollection.doc(userId).set(profile.toFirestore(), SetOptions(merge: true));
     } catch (e) {
       // Log error or rethrow
-      print('Error updating user profile to remote: $e');
+      debugPrint('Error updating user profile to remote: $e');
       rethrow;
     }
   }

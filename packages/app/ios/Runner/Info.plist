@@ -61,25 +61,36 @@
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier is used to deliver better ads and help keep the game free for everyone.</string>
 
+	<!-- Local Network Usage Description for Firebase and network access -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app requires local network access for Firebase services and multiplayer features.</string>
+
 	<!-- AdMob App ID (REPLACE with your production App ID from AdMobConfig.iosAppId) -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-xxxxxxxxxxxxxxxx~zzzzzzzzzz</string>
 
-	<!-- SKAdNetwork IDs (sample AdMob; update from Google’s latest list) -->
-	<key>SKAdNetworkItems</key>
-	<array>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>cstr6suwn9.skadnetwork</string>
-		</dict>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>4fzdc2evr5.skadnetwork</string>
-		</dict>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>v9wttpbfk9.skadnetwork</string>
-		</dict>
-	</array>
+        <!-- SKAdNetwork IDs (sample AdMob; update from Google’s latest list) -->
+        <key>SKAdNetworkItems</key>
+        <array>
+                <dict>
+                        <key>SKAdNetworkIdentifier</key>
+                        <string>cstr6suwn9.skadnetwork</string>
+                </dict>
+                <dict>
+                        <key>SKAdNetworkIdentifier</key>
+                        <string>4fzdc2evr5.skadnetwork</string>
+                </dict>
+                <dict>
+                        <key>SKAdNetworkIdentifier</key>
+                        <string>v9wttpbfk9.skadnetwork</string>
+                </dict>
+        </array>
+
+        <!-- Bonjour Services for Flutter debugging and Firebase -->
+        <key>NSBonjourServices</key>
+        <array>
+                <string>_dartobservatory._tcp</string>
+                <string>_flutter._tcp</string>
+        </array>
 </dict>
 </plist>

@@ -2,8 +2,12 @@ import 'dart:math';
 
 enum TileType { normal, obstacle, bonus }
 
+/// Represents a tile on the game board with different types and values.
 class Tile {
+  /// The type of this tile (normal, obstacle, or bonus).
   final TileType type;
+
+  /// The numerical value of this tile (null for obstacles).
   final int? value;
 
   const Tile({
@@ -11,21 +15,47 @@ class Tile {
     this.value,
   });
 
+  /// Creates a copy of this tile with optional property overrides.
   Tile copyWith({TileType? type, int? value}) {
     return Tile(
       type: type ?? this.type,
       value: value ?? this.value,
     );
   }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is Tile && runtimeType == other.runtimeType && type == other.type && value == other.value;
+
+  @override
+  int get hashCode => type.hashCode ^ value.hashCode;
+
+  @override
+  String toString() => 'Tile(type: $type, value: $value)';
 }
 
+/// Represents the game board state for Modulo Squares.
+/// The game involves moving numbered tiles on a grid using modulo arithmetic.
 class GameBoard {
+  /// Number of rows in the grid.
   final int rows;
+
+  /// Number of columns in the grid.
   final int cols;
+
+  /// Maximum value a tile can have.
   final int maxValue;
+
+  /// 2D grid of tiles representing the current board state.
   final List<List<Tile>> grid;
+
+  /// Current game score.
   final int score;
+
+  /// Current game level.
   final int level;
+
+  // Static random instance for better performance
+  static final Random _random = Random();
 
   GameBoard._({
     required this.rows,
@@ -64,15 +94,14 @@ class GameBoard {
     final rows = size;
     final cols = size;
     final maxValue = 10 + (clampedLevel - 1) * 5;
-    final random = Random();
     List<List<Tile>> grid = List.generate(
         rows,
         (_) => List.generate(cols, (_) {
               // Randomly assign special tiles for challenge
-              int roll = random.nextInt(100);
+              int roll = _random.nextInt(100);
               if (roll < 5) return Tile(type: TileType.obstacle); // 5% obstacle
-              if (roll < 8) return Tile(type: TileType.bonus, value: random.nextInt(maxValue) + 1); // 3% bonus
-              return Tile(type: TileType.normal, value: random.nextInt(maxValue) + 1);
+              if (roll < 8) return Tile(type: TileType.bonus, value: _random.nextInt(maxValue) + 1); // 3% bonus
+              return Tile(type: TileType.normal, value: _random.nextInt(maxValue) + 1);
             }));
     return GameBoard._(
       rows: rows,
@@ -143,8 +172,7 @@ class GameBoard {
           // Not zero: source respawns; target becomes (target+source)*remainder
           final int newValue = (targetVal + sourceVal) * remainder;
           newGrid[newRow][newCol] = Tile(type: newType, value: newValue);
-          final rnd = Random();
-          newGrid[row][col] = Tile(type: TileType.normal, value: rnd.nextInt(maxValue) + 1);
+          newGrid[row][col] = Tile(type: TileType.normal, value: _random.nextInt(maxValue) + 1);
         }
         return copyWith(grid: newGrid, score: newScore);
       }
@@ -196,8 +224,7 @@ class GameBoard {
         } else {
           final int newValue = (targetVal + sourceVal) * remainder;
           newGrid[nextRow][nextCol] = Tile(type: newType, value: newValue);
-          final rnd = Random();
-          newGrid[row][col] = Tile(type: TileType.normal, value: rnd.nextInt(maxValue) + 1);
+          newGrid[row][col] = Tile(type: TileType.normal, value: _random.nextInt(maxValue) + 1);
         }
         return copyWith(grid: newGrid, score: newScore);
       }
@@ -242,8 +269,7 @@ class GameBoard {
       } else {
         final int newValue = (targetVal + sourceVal) * remainder;
         newGrid[nextRow][nextCol] = Tile(type: newType, value: newValue);
-        final rnd = Random();
-        newGrid[row][col] = Tile(type: TileType.normal, value: rnd.nextInt(maxValue) + 1);
+        newGrid[row][col] = Tile(type: TileType.normal, value: _random.nextInt(maxValue) + 1);
       }
       return copyWith(grid: newGrid, score: newScore);
     }

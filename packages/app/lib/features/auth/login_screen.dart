@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:modulo/core/services/error_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,9 +32,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google sign-in failed: $e')),
-      );
+      if (context.mounted) {
+        ErrorHandler().showErrorSnackBar(
+          context,
+          ErrorHandler().getAuthErrorMessage(e),
+        );
+      }
     }
   }
 
@@ -44,9 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (appleCredential.identityToken == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Apple sign-in failed: No identity token')),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Apple sign-in failed: No identity token')),
+          );
+        }
         return;
       }
 
@@ -55,9 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await FirebaseAuth.instance.signInWithCredential(oauthCredential);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Apple sign-in failed: $e')),
-      );
+      if (context.mounted) {
+        ErrorHandler().showErrorSnackBar(
+          context,
+          ErrorHandler().getAuthErrorMessage(e),
+        );
+      }
     }
   }
 
@@ -65,15 +74,23 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await FirebaseAuth.instance.signInAnonymously();
     } on FirebaseAuthException catch (e) {
-      print('Anonymous sign-in failed: ${e.code} - ${e.message}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Guest sign-in failed. Please check your Firebase settings. Error: ${e.code}')),
-      );
+      debugPrint('Anonymous sign-in failed: ${e.code} - ${e.message}');
+      if (context.mounted) {
+        ErrorHandler().showErrorSnackBar(
+          context,
+          ErrorHandler().getAuthErrorMessage(e),
+          onRetry: () => _signInAnonymously(context),
+        );
+      }
     } catch (e) {
-      print('Anonymous sign-in failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An unexpected error occurred during guest sign-in.')),
-      );
+      debugPrint('Anonymous sign-in failed: $e');
+      if (context.mounted) {
+        ErrorHandler().showErrorSnackBar(
+          context,
+          'An unexpected error occurred during guest sign-in.',
+          onRetry: () => _signInAnonymously(context),
+        );
+      }
     }
   }
 

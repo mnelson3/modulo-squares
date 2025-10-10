@@ -11,20 +11,37 @@ import 'package:modulo/core/services/ad_service.dart';
 import 'package:modulo/core/services/consent_service.dart';
 import 'package:modulo/core/services/purchase_service.dart';
 import 'package:modulo/core/config/firebase_options.dart';
+import 'package:modulo/core/services/error_handler.dart';
+import 'package:modulo/core/services/cache_service.dart';
+import 'package:modulo/core/services/asset_service.dart';
 import 'package:modulo/core/di/service_locator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (error, stackTrace) {
+    ErrorHandler().handleFirebaseInitError(error, stackTrace);
+    // Continue with limited functionality - some features may not work
+  }
 
   // Setup dependency injection
   setupServiceLocator();
 
-  // Configure consent and ad request settings before initializing ads
-  await getIt<ConsentService>().configure();
-  await getIt<AdService>().initialize();
-  await getIt<PurchaseService>().initialize();
-  getIt<AdService>().loadInterstitial();
+  try {
+    // Configure consent and ad request settings before initializing ads
+    await getIt<ConsentService>().configure();
+    await getIt<AdService>().initialize();
+    await getIt<PurchaseService>().initialize();
+    await CacheService().initialize();
+    await AssetService().preloadAssets();
+    getIt<AdService>().loadInterstitial();
+  } catch (error, stackTrace) {
+    ErrorHandler().logError('Service initialization', error, stackTrace);
+    // Continue - services will handle their own errors gracefully
+  }
+
   runApp(const ModuloApp());
 }
 
@@ -56,6 +73,19 @@ class ModuloApp extends StatelessWidget {
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
+  Future<void> _attemptAnonymousSignIn(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } catch (error) {
+      if (context.mounted) {
+        ErrorHandler().showErrorSnackBar(
+          context,
+          ErrorHandler().getAuthErrorMessage(error),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Log app open on first frame
@@ -69,12 +99,49 @@ class AuthGate extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
+
+        if (snapshot.hasError) {
+          // Handle authentication stream errors
+          ErrorHandler().logError('Auth stream', snapshot.error);
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text('Authentication Error'),
+                  const SizedBox(height: 8),
+                  const Text('Please restart the app or check your connection.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await FirebaseAuth.instance.signInAnonymously();
+                      } catch (error) {
+                        if (context.mounted) {
+                          ErrorHandler().showErrorSnackBar(
+                            context,
+                            ErrorHandler().getAuthErrorMessage(error),
+                          );
+                        }
+                      }
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         final user = snapshot.data;
         if (user == null) {
           // Auto sign-in anonymously and show a loading indicator until ready.
-          FirebaseAuth.instance.signInAnonymously();
+          _attemptAnonymousSignIn(context);
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
+
         // Set analytics user id once we have a user
         getIt<AnalyticsService>().setUserIdFromAuth(user);
         return const GameScreen();

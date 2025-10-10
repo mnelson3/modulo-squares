@@ -4,6 +4,7 @@ import 'package:modulo/core/services/consent_service.dart';
 import 'package:modulo/core/services/purchase_service.dart';
 import 'package:modulo/core/di/service_locator.dart';
 import 'package:modulo/core/config/admob_config.dart';
+import 'package:modulo/core/services/error_handler.dart';
 
 class AdService {
   AdService._();
@@ -44,6 +45,8 @@ class AdService {
         onAdFailedToLoad: (error) {
           _isLoading = false;
           _interstitial = null;
+          ErrorHandler().logError('Ad load failed', error);
+          // Don't show error to user for ad failures - they're not critical
         },
       ),
     );
@@ -78,6 +81,7 @@ class AdService {
         _interstitial = null;
         loadInterstitial();
         _analyticsService.logAdDismissed(format: 'interstitial', trigger: trigger, levelNum: levelNum);
+        ErrorHandler().logError('Ad show failed', error);
         onClosed?.call();
       },
     );

@@ -1,7 +1,6 @@
-// /Users/marknelson/Circus/Repositories/modulo_flutter_project/lib/src/features/profile/data/repositories/profile_repository_impl.dart
-
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/profile_repository.dart';
+import '../../domain/exceptions/auth_exceptions.dart';
 import '../datasources/profile_remote_datasource.dart';
 import '../../../../shared/models/user_profile_model.dart';
 
@@ -31,10 +30,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
       }
       return null;
     } catch (e) {
-      // Handle exceptions, perhaps map to domain-specific errors
-      // For example, throw NetworkException() or UserNotFoundException()
-      print('ProfileRepositoryImpl: Error getting user profile: $e');
-      rethrow; // Or return null / throw a domain-specific error
+      // Handle exceptions, map to domain-specific errors
+      if (e.toString().contains('not-found') || e.toString().contains('404')) {
+        throw ProfileNotFoundException('User profile not found for user: $userId');
+      } else if (e.toString().contains('network') || e.toString().contains('connection')) {
+        throw NetworkException('Failed to fetch user profile due to network issues');
+      } else {
+        throw AuthException('Failed to get user profile: ${e.toString()}');
+      }
     }
   }
 
@@ -51,8 +54,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
       // Optional: Update local cache
       // await localDataSource.cacheUserProfile(profileModel);
     } catch (e) {
-      print('ProfileRepositoryImpl: Error updating user profile: $e');
-      rethrow;
+      // Handle exceptions, map to domain-specific errors
+      if (e.toString().contains('permission') || e.toString().contains('unauthorized')) {
+        throw AuthException('Permission denied: Cannot update user profile');
+      } else if (e.toString().contains('network') || e.toString().contains('connection')) {
+        throw NetworkException('Failed to update user profile due to network issues');
+      } else {
+        throw AuthException('Failed to update user profile: ${e.toString()}');
+      }
     }
   }
 }

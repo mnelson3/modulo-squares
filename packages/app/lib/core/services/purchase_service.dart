@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:modulo/core/services/error_handler.dart';
 
 /// Service for handling in-app purchases, specifically ad removal
 class PurchaseService {
@@ -65,6 +66,7 @@ class PurchaseService {
     final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(productIds);
 
     if (response.error != null) {
+      ErrorHandler().logError('Query product details', response.error);
       _purchaseController.addError(response.error!);
       return;
     }
@@ -84,6 +86,7 @@ class PurchaseService {
           _completePurchase(purchaseDetails);
           break;
         case PurchaseStatus.error:
+          ErrorHandler().logError('Purchase error', purchaseDetails.error);
           _purchaseController.add(PurchaseResult.error);
           break;
         case PurchaseStatus.canceled:
@@ -136,7 +139,9 @@ class PurchaseService {
         );
 
     if (product == null) {
-      _purchaseController.addError('Product not found: $productId');
+      final error = 'Product not found: $productId';
+      ErrorHandler().logError('Purchase product', error);
+      _purchaseController.addError(error);
       return;
     }
 

@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-The `GameScreen` widget is the primary user interface for the Modulo game. It's a `StatefulWidget` because it needs to manage the changing state of the game, such as the numbers on the grid, the currently selected cell, and the overall game status (e.g., ongoing, won).
+The `GameScreen` widget is the primary user interface for the Modulo Squares game. It's a `StatefulWidget` because it needs to manage the changing state of the game, such as the numbers on the grid, the currently selected cell, and the overall game status (e.g., ongoing, won).
 
 It's responsible for:
 
@@ -86,7 +86,7 @@ The `build` method constructs the visual layout of the game screen:
 
 *   **`Scaffold`**: Provides the basic Material Design visual layout structure.
     *   **`AppBar`**:
-        *   Displays the game title "Modulo Game".
+        *   Displays the game title "Modulo Squares".
         *   Includes an `IconButton` (refresh icon) that calls `_startNewGame()` when pressed.
     *   **`body`**:
         *   A `Center` widget containing a `Column` to arrange elements vertically and centered.
@@ -127,4 +127,4 @@ The `build` method constructs the visual layout of the game screen:
     *   More engaging win screen.
     *   Instructions or a tutorial screen.
 
-This guide should provide a comprehensive understanding of how `game_screen.dart` is implemented and functions within the Modulo game application.
+This guide should provide a comprehensive understanding of how `game_screen.dart` is implemented and functions within the Modulo Squares application.
