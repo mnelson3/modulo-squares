@@ -70,16 +70,79 @@ class ConsentService {
     }
   }
 
-  /// Handle UMP (User Messaging Platform) consent - placeholder for future implementation
+  /// Handle UMP consent flow
   Future<void> _handleUMPConsent() async {
-    // TODO: Implement UMP consent flow when needed
-    // This would typically involve:
-    // 1. Check if consent is required
-    // 2. Show consent form if needed
-    // 3. Update _personalized based on user choices
+    try {
+      // Request consent info update with debug settings
+      ConsentInformation.instance.requestConsentInfoUpdate(
+        ConsentRequestParameters(
+          consentDebugSettings: ConsentDebugSettings(
+            debugGeography: DebugGeography.debugGeographyDisabled,
+          ),
+        ),
+        () {
+          // Consent info updated successfully, now check if we can request ads
+          _checkConsentStatus();
+        },
+        (FormError error) {
+          // Consent info update failed, continue with non-personalized ads
+          _personalized = false;
+        },
+      );
+    } catch (e) {
+      // Error occurred, continue with non-personalized ads
+      _personalized = false;
+    }
+  }
 
-    // For now, default to non-personalized
-    _personalized = false;
+  /// Check current consent status
+  Future<void> _checkConsentStatus() async {
+    try {
+      // Check if we can request ads
+      final canRequestAds = await ConsentInformation.instance.canRequestAds();
+
+      if (!canRequestAds) {
+        // Need to show consent form
+        _loadAndShowConsentForm();
+      } else {
+        // Consent already obtained, can show personalized ads
+        _personalized = true;
+      }
+    } catch (e) {
+      // Error occurred, continue with non-personalized ads
+      _personalized = false;
+    }
+  }
+
+  /// Load and show UMP consent form
+  Future<void> _loadAndShowConsentForm() async {
+    try {
+      // Load the consent form
+      ConsentForm.loadConsentForm(
+        (ConsentForm consentForm) {
+          // Consent form loaded successfully, now show it
+          consentForm.show((FormError? formError) {
+            // Handle form dismissal
+            if (formError != null) {
+              // Form error occurred
+              _personalized = false;
+            } else {
+              // Form completed successfully, recheck consent status
+              _checkConsentStatus();
+            }
+          });
+        },
+        (FormError error) {
+          // Consent form failed to load
+          // Continue with non-personalized ads
+          _personalized = false;
+        },
+      );
+    } catch (e) {
+      // Unexpected error
+      // Continue with non-personalized ads
+      _personalized = false;
+    }
   }
 
   /// Update ad configuration based on current consent status
