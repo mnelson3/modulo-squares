@@ -1,8 +1,53 @@
-# Modulo Game
+# Modulo Squares Monorepo
 
-A fun and challenging mobile puzzle game built with Flutter, running on iOS and Android.
+A Firebase-powered puzzle game built with Flutter, featuring in-app purchases and cross-platform support.
 
-## Concept
+## Project Structure
+
+```
+modulo-monorepo/
+├── packages/
+│   ├── app/                    # Flutter mobile/web app
+│   │   ├── lib/               # Flutter source code
+│   │   ├── android/           # Android platform code
+│   │   ├── ios/               # iOS platform code
+│   │   ├── web/               # Web platform code
+│   │   └── pubspec.yaml       # Flutter dependencies
+│   ├── functions/             # Firebase Cloud Functions (API server)
+│   │   ├── index.js          # Cloud Functions code
+│   │   └── package.json      # Node.js dependencies
+│   ├── firestore-rules/       # Firestore security rules
+│   │   └── firestore.rules   # Database security rules
+│   └── shared/               # Shared code and utilities
+├── firebase.json             # Firebase configuration
+├── .firebaserc              # Firebase project configuration
+└── package.json             # Monorepo root configuration
+```
+
+## Packages
+
+### App (`packages/app/`)
+The main Flutter application with cross-platform support for mobile and web.
+
+**Tech Stack:**
+- Flutter 3.32.0
+- Firebase (Auth, Firestore, Analytics, Functions)
+- Google Mobile Ads
+- In-App Purchases
+
+### Functions (`packages/functions/`)
+Firebase Cloud Functions serving as the API server.
+
+**Features:**
+- Score submission validation
+- Leaderboard management
+- Purchase validation
+- Server-side business logic
+
+### Firestore Rules (`packages/firestore-rules/`)
+Security rules for Firestore database access control.
+
+## Game Concept
 
 Modulo is played on a 4x4 grid. Each square can contain a number. Players move numbered squares up, down, left, or right into adjacent squares.
 
@@ -15,32 +60,67 @@ The core mechanic involves the modulo operator:
 
 **The objective of the game is to clear the entire board of numbers.**
 
-## Features
+## Development
 
-*   Interactive 4x4 game grid.
-*   Tap-to-select and tap-to-move mechanics.
-*   Core game logic based on the modulo operator.
-*   Win condition: Clear all numbers from the board.
-*   "New Game" functionality to reset the board.
-*   (Planned) Advertising support / Ad-free option.
+### Prerequisites
+- Flutter 3.32.0+
+- Node.js 18+
+- Firebase CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development)
 
-## How to Play
+### Setup
+```bash
+# Install root dependencies
+npm install
 
-1.  The game starts with a 4x4 grid partially filled with numbers.
-2.  Tap on a numbered square to select it.
-3.  Tap on an adjacent square (up, down, left, or right) to attempt a move.
-4.  **Move Rules:**
-    *   **Moving to an Empty Square:** The selected number moves to the empty square.
-    *   **Moving to an Occupied Square:**
-        *   Let the selected square's value be `S` and the target square's value be `T`.
-        *   If `S <= T`:
-            *   The target square becomes `T % S`.
-            *   If `T % S == 0`, the target square becomes empty.
-            *   The selected square becomes empty.
-        *   If `S > T`: The move is not allowed (or the selected square simply empties without affecting the target, depending on final game design choice).
-5.  Continue making moves with the goal of clearing all numbers from the grid.
-6.  If the board is cleared, you win!
-7.  Use the "Refresh" icon in the app bar to start a new game at any time.
+# Install functions dependencies
+npm run install:all
+
+# Login to Firebase
+firebase login
+```
+
+### Development Commands
+```bash
+# Run Flutter app
+cd packages/app && flutter run
+
+# Run functions locally
+firebase emulators:start
+
+# Test Flutter app
+npm run test:app
+
+# Deploy all services
+npm run deploy:all
+```
+
+### Building
+```bash
+# Build Android APK
+npm run build:app
+
+# Build web app
+cd packages/app && flutter build web
+```
+
+## Deployment
+
+The project uses Firebase for hosting and backend services:
+
+- **Flutter Web App**: Deployed to Firebase Hosting
+- **Cloud Functions**: Serverless API endpoints
+- **Firestore**: NoSQL database with security rules
+- **Authentication**: Firebase Auth for user management
+
+## Architecture
+
+- **Monorepo Structure**: Organized packages for better code separation
+- **Firebase Backend**: Functions as API server, Firestore for data
+- **Cross-Platform**: Single Flutter codebase for mobile and web
+- **Monetization**: In-app purchases for ad removal
+- **Analytics**: Firebase Analytics for user behavior tracking
 
 ## Screenshots / GIFs
 
@@ -50,24 +130,61 @@ The core mechanic involves the modulo operator:
 
 *   **Flutter:** For cross-platform (iOS & Android) mobile app development.
 *   **Dart:** Programming language used by Flutter.
+*   **Firebase:** Backend services for authentication, analytics, and data storage.
+*   **Google Mobile Ads:** Advertising integration with consent management.
+*   **GetIt:** Dependency injection for better testability and architecture.
+
+## Architecture
+
+This project follows a **feature-based architecture** with clear separation of concerns:
+
+```
+lib/
+├── core/                          # Application-wide services and configuration
+│   ├── config/
+│   │   └── firebase_options.dart  # Firebase platform-specific configuration
+│   ├── di/
+│   │   └── service_locator.dart   # Dependency injection setup
+│   └── services/                  # Core services (analytics, ads, consent, leaderboard)
+│       ├── ad_service.dart
+│       ├── analytics_service.dart
+│       ├── consent_service.dart
+│       ├── game_utils.dart
+│       └── leaderboard_service.dart
+├── features/                      # Feature-specific code
+│   ├── auth/                      # Authentication feature
+│   │   ├── data/                  # Data layer (repositories, datasources, models)
+│   │   ├── domain/                # Domain layer (entities, repositories, usecases)
+│   │   ├── login_screen.dart
+│   │   └── profile_screen.dart
+│   ├── game/                      # Game feature
+│   │   ├── game_screen.dart       # Main game UI
+│   │   └── instructions_screen.dart
+│   └── leaderboard/               # Leaderboard feature
+│       └── leaderboard_screen.dart
+├── shared/                        # Shared components across features
+│   ├── models/                    # Common data models
+│   │   ├── cell_position.dart
+│   │   ├── game_board.dart
+│   │   └── user_profile_model.dart
+│   └── widgets/                   # Reusable UI components
+│       └── grid_cell_widget.dart
+├── l10n/                          # Localization files
+├── main.dart                      # App entry point
+└── firebase_options.dart          # Legacy Firebase config (deprecated)
+```
+
+### Architecture Principles
+
+- **Feature-based:** Code is organized by features rather than technical layers
+- **Dependency Injection:** Services are injected using GetIt for better testability
+- **Clean Architecture:** Separation between data, domain, and presentation layers
+- **Shared Components:** Common models and widgets are centralized
+- **Firebase-first:** Backend services integrated throughout the application
 
 ## Project Structure
 
 A brief overview of the key directories and files:
-
-```
-modulo-flutter-project/
-├── lib/
-│   ├── main.dart               # App entry point, MaterialApp setup
-│   ├── models/
-│   │   └── game_board.dart     # Core game logic, grid state management
-│   ├── screens/
-│   │   └── game_screen.dart    # Main UI for the game, handles user interaction
-│   └── widgets/
-│       └── grid_cell_widget.dart # UI for individual cells in the grid
-├── ... (other Flutter project files)
-└── README.md                   # This file
-```
 
 ## Getting Started
 
@@ -77,6 +194,18 @@ To get a local copy up and running, follow these simple steps.
 
 *   Flutter SDK: Install Flutter
 *   An editor like VS Code or Android Studio with Flutter plugins.
+*   Firebase project: Set up a Firebase project for authentication, Firestore, and Analytics.
+
+### Firebase Setup
+
+1.  Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
+2.  Enable Authentication with Anonymous sign-in
+3.  Enable Firestore Database
+4.  Enable Google Analytics
+5.  Add Android and iOS apps to your Firebase project
+6.  Download and place the configuration files:
+    - `google-services.json` in `android/app/`
+    - `GoogleService-Info.plist` in `ios/Runner/`
 
 ### Installation
 
@@ -97,16 +226,29 @@ To get a local copy up and running, follow these simple steps.
     flutter run
     ```
 
+### Testing
+
+Run the test suite:
+```sh
+flutter test
+```
+
+Run with code coverage:
+```sh
+flutter test --coverage
+```
+
 ## Future Enhancements
 
-*   Animations for tile movements and value changes.
-*   Sound effects.
-*   Levels with predefined starting configurations and increasing difficulty.
-*   Scoring system and move counter.
-*   Undo move functionality.
-*   Integration of banner/interstitial ads (`google_mobile_ads`).
-*   In-app purchase option to remove ads (`in_app_purchase`).
-*   Persistence of game state.
+*   Enhanced animations for tile movements and value changes.
+*   Sound effects and haptic feedback.
+*   More special tile types and power-ups.
+*   Daily challenges and tournaments.
+*   Social features (friend leaderboards, achievements).
+*   Cloud save functionality for cross-device progress.
+*   Advanced analytics and player behavior insights.
+*   A/B testing framework for game balance.
+*   Offline mode with local leaderboards.
 
 ## Contributing
 

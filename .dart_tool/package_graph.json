@@ -7,16 +7,20 @@
       "name": "modulo",
       "version": "0.0.1+1",
       "dependencies": [
+        "app_tracking_transparency",
         "audioplayers",
         "cloud_firestore",
+        "cupertino_icons",
         "firebase_analytics",
         "firebase_auth",
         "firebase_core",
         "flutter",
         "flutter_lints",
         "flutter_localizations",
+        "get_it",
         "google_mobile_ads",
         "google_sign_in",
+        "in_app_purchase",
         "intl",
         "shared_preferences",
         "sign_in_with_apple"
@@ -51,6 +55,32 @@
         "test_api",
         "vector_math",
         "vm_service"
+      ]
+    },
+    {
+      "name": "in_app_purchase",
+      "version": "3.2.3",
+      "dependencies": [
+        "flutter",
+        "in_app_purchase_android",
+        "in_app_purchase_platform_interface",
+        "in_app_purchase_storekit"
+      ]
+    },
+    {
+      "name": "app_tracking_transparency",
+      "version": "2.0.6+1",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "get_it",
+      "version": "8.2.0",
+      "dependencies": [
+        "async",
+        "collection",
+        "meta"
       ]
     },
     {
@@ -178,6 +208,11 @@
         "shared_preferences_web",
         "shared_preferences_windows"
       ]
+    },
+    {
+      "name": "cupertino_icons",
+      "version": "1.0.8",
+      "dependencies": []
     },
     {
       "name": "flutter_localizations",
@@ -362,6 +397,33 @@
         "stream_channel",
         "string_scanner",
         "term_glyph"
+      ]
+    },
+    {
+      "name": "in_app_purchase_storekit",
+      "version": "0.4.4",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "in_app_purchase_platform_interface",
+        "json_annotation"
+      ]
+    },
+    {
+      "name": "in_app_purchase_platform_interface",
+      "version": "1.4.0",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "in_app_purchase_android",
+      "version": "0.4.0+5",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "in_app_purchase_platform_interface"
       ]
     },
     {
@@ -710,12 +772,10 @@
       "dependencies": []
     },
     {
-      "name": "webview_flutter_platform_interface",
-      "version": "2.14.0",
+      "name": "json_annotation",
+      "version": "4.9.0",
       "dependencies": [
-        "flutter",
-        "meta",
-        "plugin_platform_interface"
+        "meta"
       ]
     },
     {
@@ -723,6 +783,15 @@
       "version": "2.1.8",
       "dependencies": [
         "meta"
+      ]
+    },
+    {
+      "name": "webview_flutter_platform_interface",
+      "version": "2.14.0",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
       ]
     },
     {

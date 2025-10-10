@@ -40,7 +40,12 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Android signing configuration
+packages/app/android/app/*.jks
+packages/app/android/app/*.keystore
+packages/app/android/local.properties
+
+# iOS signing (generally handled by Xcode, but good to be safe)
+packages/app/ios/*.mobileprovision
+packages/app/ios/*.p12
+node_modules

@@ -1,0 +1,35 @@
+# Modulo Squares - Full Description
+
+Challenge your mind with Modulo Squares, a unique puzzle game that combines strategy, logic, and mathematical thinking!
+
+**Core Gameplay:**
+- Navigate a 4x4 grid filled with numbers
+- Use modulo operations to clear tiles strategically
+- Progress through increasingly challenging levels
+- Master special tiles that add exciting twists
+
+**Key Features:**
+- ✅ Intuitive tap-to-move and swipe controls
+- ✅ Level-based progression system
+- ✅ Special tiles with unique effects
+- ✅ Global leaderboard competition
+- ✅ Cross-platform play (iOS, Android, Web)
+- ✅ Ad-supported free-to-play experience
+
+**How to Play:**
+1. Select a numbered tile on the grid
+2. Move it to an adjacent empty space or occupied tile
+3. When moving to an occupied tile, apply modulo operation
+4. Clear all numbers to complete the level
+5. Unlock new challenges and climb the leaderboard!
+
+**Perfect for:**
+- Puzzle game enthusiasts
+- Math lovers and logic thinkers
+- Casual gamers seeking brain-teasing challenges
+- Players who enjoy strategic gameplay
+
+**Why Modulo Squares?**
+Unlike traditional match-3 or tile-sliding games, Modulo Squares introduces mathematical strategy through modulo operations. Each move requires careful calculation and planning, creating a truly unique gaming experience that rewards logical thinking and pattern recognition.
+
+Download now and start your modulo mastery journey!

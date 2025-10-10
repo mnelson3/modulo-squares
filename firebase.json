@@ -3,30 +3,37 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "modulo-84c4d",
-          "appId": "1:239807122511:android:b0a89e46830e6d6400ee3a",
-          "fileOutput": "android/app/google-services.json"
+          "projectId": "modulo-squares",
+          "appId": "1:1038873713695:android:8cc29f252bb8b1e6bcc92a",
+          "fileOutput": "packages/app/android/app/google-services.json"
         }
       },
       "ios": {
         "default": {
-          "projectId": "modulo-84c4d",
-          "appId": "1:239807122511:ios:47e91bc22b2729bc00ee3a",
+          "projectId": "modulo-squares",
+          "appId": "1:1038873713695:ios:fd144b35448ed1e6bcc92a",
           "uploadDebugSymbols": false,
-          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+          "fileOutput": "packages/app/ios/Runner/GoogleService-Info.plist"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "modulo-84c4d",
+          "projectId": "modulo-squares",
           "configurations": {
-            "android": "1:239807122511:android:b0a89e46830e6d6400ee3a",
-            "ios": "1:239807122511:ios:47e91bc22b2729bc00ee3a",
-            "web": "1:239807122511:web:89c06cdf09b0845900ee3a"
+            "android": "1:1038873713695:android:8cc29f252bb8b1e6bcc92a",
+            "ios": "1:1038873713695:ios:fd144b35448ed1e6bcc92a",
+            "web": "1:1038873713695:web:51af3e2f7795085abcc92a"
           }
         }
       }
     }
+  },
+  "functions": {
+    "source": "packages/functions",
+    "runtime": "nodejs18"
+  },
+  "firestore": {
+    "rules": "packages/firestore-rules/firestore.rules"
   },
   "emulators": {
     "dataconnect": {
