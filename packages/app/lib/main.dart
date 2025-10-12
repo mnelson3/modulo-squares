@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:modulo/features/game/game_screen.dart';
+import 'package:modulo/features/website/website_screen.dart';
 // Login screen intentionally not used for launch; auto guest auth.
 import 'package:modulo/l10n/app_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -144,7 +146,13 @@ class AuthGate extends StatelessWidget {
 
         // Set analytics user id once we have a user
         getIt<AnalyticsService>().setUserIdFromAuth(user);
-        return const GameScreen();
+
+        // Show promotional website on web, game on mobile
+        if (kIsWeb) {
+          return const WebsiteScreen();
+        } else {
+          return const GameScreen();
+        }
       },
     );
   }

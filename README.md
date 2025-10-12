@@ -1,64 +1,58 @@
-# Modulo Squares Monorepo
+# Modulo Squares
 
-A Firebase-powered puzzle game built with Flutter, featuring in-app purchases and cross-platform support.
+A Firebase-powered puzzle game built with Flutter, featuring in-app purchases, ads, and cross-platform support.
 
-## Project Structure
+## 🎮 Game Concept
+
+Modulo Squares is a strategic puzzle game played on a 4x4 grid where players move numbered tiles to clear the board using modulo arithmetic. The core mechanic involves moving tiles into adjacent squares - when a tile's value is less than or equal to the target square's value, a modulo operation occurs, potentially clearing tiles and advancing the game.
+
+**Objective:** Clear the entire board of numbers to win!
+
+## 🏗️ Project Structure
 
 ```
-modulo-monorepo/
+modulo-flutter-project/
 ├── packages/
-│   ├── app/                    # Flutter mobile/web app
+│   ├── app/                    # Main Flutter application
 │   │   ├── lib/               # Flutter source code
+│   │   │   ├── core/          # Application core (services, config)
+│   │   │   ├── features/      # Feature-based architecture
+│   │   │   │   ├── auth/      # Authentication feature
+│   │   │   │   ├── game/      # Game feature
+│   │   │   │   └── leaderboard/# Leaderboard feature
+│   │   │   ├── shared/        # Shared components
+│   │   │   ├── l10n/          # Localization
+│   │   │   └── main.dart      # App entry point
 │   │   ├── android/           # Android platform code
 │   │   ├── ios/               # iOS platform code
 │   │   ├── web/               # Web platform code
-│   │   └── pubspec.yaml       # Flutter dependencies
-│   ├── functions/             # Firebase Cloud Functions (API server)
-│   │   ├── index.js          # Cloud Functions code
-│   │   └── package.json      # Node.js dependencies
-│   ├── firestore-rules/       # Firestore security rules
-│   │   └── firestore.rules   # Database security rules
-│   └── shared/               # Shared code and utilities
+│   │   └── test/              # Unit and widget tests
+│   └── shared/               # Shared utilities (future use)
 ├── firebase.json             # Firebase configuration
 ├── .firebaserc              # Firebase project configuration
-└── package.json             # Monorepo root configuration
+├── analysis_options.yaml    # Dart/Flutter linting rules
+└── pubspec.yaml             # Flutter dependencies
 ```
 
-## Packages
+## 🚀 Features
 
-### App (`packages/app/`)
-The main Flutter application with cross-platform support for mobile and web.
+- **Cross-Platform**: iOS, Android, and Web support
+- **Firebase Integration**: Authentication, Firestore, Analytics
+- **Monetization**: AdMob ads and in-app purchases
+- **Game Mechanics**: Modulo arithmetic, special tiles, progressive difficulty
+- **Leaderboards**: Global high scores with Firebase
+- **Offline Play**: Local gameplay with cloud sync
+- **Privacy Compliant**: App Tracking Transparency, consent management
 
-**Tech Stack:**
-- Flutter 3.32.0
-- Firebase (Auth, Firestore, Analytics, Functions)
-- Google Mobile Ads
-- In-App Purchases
+## 🛠️ Tech Stack
 
-### Functions (`packages/functions/`)
-Firebase Cloud Functions serving as the API server.
-
-**Features:**
-- Score submission validation
-- Leaderboard management
-- Purchase validation
-- Server-side business logic
-
-### Firestore Rules (`packages/firestore-rules/`)
-Security rules for Firestore database access control.
-
-## Game Concept
-
-Modulo is played on a 4x4 grid. Each square can contain a number. Players move numbered squares up, down, left, or right into adjacent squares.
-
-The core mechanic involves the modulo operator:
-*   If the **value of the square being moved (`S`)** is **less than or equal to the value of the square it's moved into (`T`)**, a modulo operation occurs: `T % S`.
-*   If the remainder of this operation is non-zero, the target square (`T`) is updated with this remainder.
-*   If the remainder is zero, the target square (`T`) becomes empty.
-*   The source square (`S`) always becomes empty after a valid conditional move.
-*   If a square is moved into an empty square, its number simply transfers to the new location.
-
-**The objective of the game is to clear the entire board of numbers.**
+- **Framework**: Flutter 3.32.0
+- **Language**: Dart
+- **Backend**: Firebase (Auth, Firestore, Analytics, Functions)
+- **Ads**: Google AdMob with consent management
+- **Purchases**: In-app purchases for ad removal
+- **State Management**: Provider pattern with feature-based architecture
+- **Architecture**: Clean Architecture with dependency injection
 
 ## Development
 
@@ -105,86 +99,195 @@ npm run build:app
 cd packages/app && flutter build web
 ```
 
-## Deployment
+## 📦 Packages
 
-The project uses Firebase for hosting and backend services:
+### App (`packages/app/`)
+The main Flutter application with cross-platform support.
 
-- **Flutter Web App**: Deployed to Firebase Hosting
-- **Cloud Functions**: Serverless API endpoints
-- **Firestore**: NoSQL database with security rules
-- **Authentication**: Firebase Auth for user management
+**Key Components:**
+- **Core Services**: AdMob, Analytics, Leaderboard, Purchase, Asset management
+- **Features**: Authentication (Google/Apple/Anonymous), Game logic, Leaderboards
+- **UI**: Game screen, Login screen, Leaderboard screen with responsive design
+- **Platform Support**: iOS, Android, Web with platform-specific optimizations
 
-## Architecture
+### Shared (`packages/shared/`)
+Shared utilities and common code (currently minimal, designed for future expansion).
 
-- **Monorepo Structure**: Organized packages for better code separation
-- **Firebase Backend**: Functions as API server, Firestore for data
-- **Cross-Platform**: Single Flutter codebase for mobile and web
-- **Monetization**: In-app purchases for ad removal
-- **Analytics**: Firebase Analytics for user behavior tracking
+## 🏗️ Architecture
 
-## Screenshots / GIFs
-
-*(Add screenshots or a GIF of your game in action here once the UI is more developed!)*
-
-## Tech Stack
-
-*   **Flutter:** For cross-platform (iOS & Android) mobile app development.
-*   **Dart:** Programming language used by Flutter.
-*   **Firebase:** Backend services for authentication, analytics, and data storage.
-*   **Google Mobile Ads:** Advertising integration with consent management.
-*   **GetIt:** Dependency injection for better testability and architecture.
-
-## Architecture
-
-This project follows a **feature-based architecture** with clear separation of concerns:
+This project follows a **feature-based clean architecture** with clear separation of concerns:
 
 ```
 lib/
 ├── core/                          # Application-wide services and configuration
-│   ├── config/
-│   │   └── firebase_options.dart  # Firebase platform-specific configuration
-│   ├── di/
-│   │   └── service_locator.dart   # Dependency injection setup
-│   └── services/                  # Core services (analytics, ads, consent, leaderboard)
-│       ├── ad_service.dart
-│       ├── analytics_service.dart
-│       ├── consent_service.dart
-│       ├── game_utils.dart
-│       └── leaderboard_service.dart
-├── features/                      # Feature-specific code
+│   ├── config/                    # App configuration (AdMob, Firebase)
+│   ├── di/                        # Dependency injection setup
+│   └── services/                  # Core services (ads, analytics, leaderboard)
+├── features/                      # Feature-based architecture
 │   ├── auth/                      # Authentication feature
-│   │   ├── data/                  # Data layer (repositories, datasources, models)
-│   │   ├── domain/                # Domain layer (entities, repositories, usecases)
-│   │   ├── login_screen.dart
+│   │   ├── data/                  # Data layer (repositories, datasources)
+│   │   ├── domain/                # Domain layer (entities, usecases)
+│   │   ├── login_screen.dart      # UI layer
 │   │   └── profile_screen.dart
 │   ├── game/                      # Game feature
 │   │   ├── game_screen.dart       # Main game UI
-│   │   └── instructions_screen.dart
+│   │   ├── game_state.dart        # Game state management
+│   │   ├── providers/             # State providers
+│   │   └── widgets/               # Game-specific widgets
 │   └── leaderboard/               # Leaderboard feature
 │       └── leaderboard_screen.dart
 ├── shared/                        # Shared components across features
 │   ├── models/                    # Common data models
-│   │   ├── cell_position.dart
-│   │   ├── game_board.dart
-│   │   └── user_profile_model.dart
 │   └── widgets/                   # Reusable UI components
-│       └── grid_cell_widget.dart
 ├── l10n/                          # Localization files
-├── main.dart                      # App entry point
-└── firebase_options.dart          # Legacy Firebase config (deprecated)
+└── main.dart                      # App entry point
 ```
 
 ### Architecture Principles
 
-- **Feature-based:** Code is organized by features rather than technical layers
-- **Dependency Injection:** Services are injected using GetIt for better testability
-- **Clean Architecture:** Separation between data, domain, and presentation layers
-- **Shared Components:** Common models and widgets are centralized
-- **Firebase-first:** Backend services integrated throughout the application
+- **Feature-based**: Code organized by business features rather than technical layers
+- **Clean Architecture**: Separation between data, domain, and presentation layers
+- **Dependency Injection**: Services injected using GetIt for testability
+- **Immutable Models**: Game state managed with immutable data structures
+- **Platform Agnostic**: Core logic separated from platform-specific code
 
-## Project Structure
+## 🚀 Getting Started
 
-A brief overview of the key directories and files:
+### Prerequisites
+- Flutter 3.32.0+
+- Dart SDK
+- Android Studio (for Android development)
+- Xcode 15+ (for iOS development)
+- Firebase CLI (for backend deployment)
+
+### Firebase Setup
+
+1. **Create Firebase Project**: Visit [console.firebase.google.com](https://console.firebase.google.com)
+2. **Enable Services**:
+   - Authentication (Anonymous, Google, Apple sign-in)
+   - Firestore Database
+   - Firebase Analytics
+3. **Add Apps**: Register Android and iOS apps in Firebase console
+4. **Download Config Files**:
+   - `google-services.json` → `packages/app/android/app/`
+   - `GoogleService-Info.plist` → `packages/app/ios/Runner/`
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd modulo-flutter-project
+
+# Install Flutter dependencies
+cd packages/app
+flutter pub get
+
+# Run the app
+flutter run
+```
+
+### Development Commands
+
+```bash
+# Run on specific platform
+flutter run -d ios        # iOS simulator/device
+flutter run -d android    # Android emulator/device
+flutter run -d chrome     # Web browser
+
+# Run tests
+flutter test
+
+# Analyze code
+flutter analyze
+
+# Format code
+flutter format .
+```
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage
+flutter test --coverage
+
+# Run specific test file
+flutter test test/models/game_board_test.dart
+
+# Run integration tests (if available)
+flutter test integration_test
+```
+
+## 📱 Building for Production
+
+### Android
+```bash
+# Build APK
+flutter build apk --release
+
+# Build App Bundle (recommended)
+flutter build appbundle --release
+```
+
+### iOS
+```bash
+# Build for iOS
+flutter build ios --release
+
+# Open Xcode for distribution
+open ios/Runner.xcworkspace
+```
+
+### Web
+```bash
+# Build for web
+flutter build web
+```
+
+## 🚀 Deployment
+
+- **Android**: Upload `.aab` file to Google Play Console
+- **iOS**: Archive and upload to App Store Connect via Xcode
+- **Web**: Deploy `build/web` to Firebase Hosting or any web server
+
+## 📊 Analytics & Monitoring
+
+The app includes comprehensive Firebase Analytics tracking:
+- User engagement and retention metrics
+- Game progression and difficulty analysis
+- Ad performance monitoring
+- Crash reporting and error tracking
+
+## 🔮 Future Enhancements
+
+- Enhanced animations and visual effects
+- Sound effects and haptic feedback
+- Daily challenges and tournaments
+- Social features (friend leaderboards, achievements)
+- Cloud save functionality
+- Advanced analytics and A/B testing
+- More special tile types and power-ups
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` file for more information.
+
+---
+
+**Project by:** Mark Nelson
 
 ## Getting Started
 

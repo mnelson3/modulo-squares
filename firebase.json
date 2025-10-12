@@ -41,7 +41,7 @@
     }
   },
   "hosting": {
-    "public": "packages/web/dist",
+    "public": "packages/app/build/web",
     "ignore": [
       "firebase.json",
       "**/.*",
