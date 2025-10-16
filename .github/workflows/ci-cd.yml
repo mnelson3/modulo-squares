@@ -78,25 +78,26 @@ jobs:
         working-directory: packages/app
 
       - name: Setup Firebase project
+        id: firebase-setup
         run: |
           case ${{ github.ref }} in
             refs/heads/main)
-              echo "FIREBASE_PROJECT=modulo-squares-prod" >> $GITHUB_ENV
+              echo "firebase_project=modulo-squares-prod" >> $GITHUB_OUTPUT
               ;;
             refs/heads/staging)
-              echo "FIREBASE_PROJECT=modulo-squares-staging" >> $GITHUB_ENV
+              echo "firebase_project=modulo-squares-staging" >> $GITHUB_OUTPUT
               ;;
             refs/heads/develop)
-              echo "FIREBASE_PROJECT=modulo-squares-dev" >> $GITHUB_ENV
+              echo "firebase_project=modulo-squares-dev" >> $GITHUB_OUTPUT
               ;;
           esac
 
       - name: Deploy to Firebase Hosting
         id: deploy
         run: |
-          firebase use ${{ env.FIREBASE_PROJECT }} --token ${{ secrets.FIREBASE_TOKEN }}
+          firebase use ${{ steps.firebase-setup.outputs.firebase_project }} --token ${{ secrets.FIREBASE_TOKEN }}
           firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
-          echo "url=https://${{ env.FIREBASE_PROJECT }}.web.app" >> $GITHUB_OUTPUT
+          echo "url=https://${{ steps.firebase-setup.outputs.firebase_project }}.web.app" >> $GITHUB_OUTPUT
 
       - name: Comment deployment URL on PR
         if: github.event_name == 'pull_request'
@@ -107,7 +108,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 **Deployment Preview**\n\n✅ Successfully deployed to: https://${{ env.FIREBASE_PROJECT }}.web.app\n\n**Environment:** ${{ github.ref == 'refs/heads/main' && 'Production' || github.ref == 'refs/heads/staging' && 'Staging' || 'Development' }}\n\n**Build:** ${{ github.sha }}\n\n---\n\n*This deployment will be available for 7 days*`
+              body: `🚀 **Deployment Preview**\n\n✅ Successfully deployed to: https://${{ steps.firebase-setup.outputs.firebase_project }}.web.app\n\n**Environment:** ${{ github.ref == 'refs/heads/main' && 'Production' || github.ref == 'refs/heads/staging' && 'Staging' || 'Development' }}\n\n**Build:** ${{ github.sha }}\n\n---\n\n*This deployment will be available for 7 days*`
             })
 
   release:
