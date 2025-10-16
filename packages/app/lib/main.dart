@@ -32,13 +32,17 @@ void main() async {
   setupServiceLocator();
 
   try {
-    // Configure consent and ad request settings before initializing ads
-    await getIt<ConsentService>().configure();
-    await getIt<AdService>().initialize();
-    await getIt<PurchaseService>().initialize();
+    // Configure consent and ad request settings before initializing ads (mobile only)
+    if (!kIsWeb) {
+      await getIt<ConsentService>().configure();
+      await getIt<AdService>().initialize();
+      await getIt<PurchaseService>().initialize();
+    }
     await CacheService().initialize();
     await AssetService().preloadAssets();
-    getIt<AdService>().loadInterstitial();
+    if (!kIsWeb) {
+      getIt<AdService>().loadInterstitial();
+    }
   } catch (error, stackTrace) {
     ErrorHandler().logError('Service initialization', error, stackTrace);
     // Continue - services will handle their own errors gracefully

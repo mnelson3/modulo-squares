@@ -18,11 +18,7 @@
     "dev:web": "cd packages/web && npm run dev",
     "test:app": "cd packages/app && flutter test",
     "test:functions": "cd packages/functions && npm test",
-    "lint": "cd packages/functions && npm run lint && cd ../web && npm run lint",
-    "lint:fix": "cd packages/functions && npm run lint:fix && cd ../web && npm run lint:fix",
-    "format": "cd packages/functions && npm run format && cd ../web && npm run format",
-    "check": "cd packages/functions && npm run check && cd ../web && npm run check",
-    "clean": "cd packages/app && flutter clean && rm -rf build/ && cd ../functions && npm run clean && cd ../web && npm run clean",
+    "clean": "cd packages/app && flutter clean && rm -rf build/",
     "install:all": "npm install && cd packages/functions && npm install && cd ../web && npm install"
   },
   "devDependencies": {

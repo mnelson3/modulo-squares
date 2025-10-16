@@ -113,3 +113,8 @@ packages/app/android/local.properties
 packages/app/ios/*.mobileprovision
 packages/app/ios/*.p12
 node_modules
+
+# Environment variables
+.env
+.env.*
+!.env.example

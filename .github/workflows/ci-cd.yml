@@ -1,153 +1,221 @@
-name: CI/CD Pipeline
+name: 🚀 CI/CD Pipeline - Build, Test & Deploy
 
 on:
   push:
     branches: [ main, develop, staging ]
   pull_request:
     branches: [ main, develop, staging ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'STAGING'
+        type: choice
+        options:
+          - PRODUCTION
+          - STAGING
+          - DEVELOPMENT
 
 env:
   FLUTTER_VERSION: '3.24.0'
+  NODE_VERSION: '18'
 
 jobs:
-  test:
-    name: Run Tests
+  # 🔍 Determine Environment
+  determine-environment:
+    name: �� Determine Environment
     runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      should-deploy: ${{ steps.set-env.outputs.should-deploy }}
     steps:
-      - name: Checkout code
+      - name: 📋 Set Environment Variables
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            INPUT_ENV=$(echo "${{ github.event.inputs.environment }}" | tr '[:upper:]' '[:lower:]')
+            echo "environment=$INPUT_ENV" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  # 🔍 Code Quality & Testing
+  quality-check:
+    name: 🔍 Quality Check & Tests
+    runs-on: ubuntu-latest
+    needs: determine-environment
+    outputs:
+      should-deploy: ${{ needs.determine-environment.outputs.should-deploy }}
+    steps:
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: 🦋 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Install dependencies
+      - name: 📦 Install Dependencies
         run: flutter pub get
         working-directory: packages/app
 
-      - name: Run Flutter analyze
+      - name: 🔧 Flutter Analyze
         run: flutter analyze
         working-directory: packages/app
 
-      - name: Run tests
+      - name: 🧪 Run Tests
         run: flutter test --coverage
         working-directory: packages/app
 
-      - name: Upload coverage to Codecov
+      - name: 📊 Upload Coverage
         uses: codecov/codecov-action@v4
         with:
           file: packages/app/coverage/lcov.info
           flags: flutter
           name: codecov-umbrella
 
-  build-and-deploy:
-    name: Build and Deploy
-    needs: test
+  # 🏗️ Build Flutter Web App
+  build-web:
+    name: 🏗️ Build Flutter Web App
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'development' }}
-      url: ${{ steps.deploy.outputs.url }}
+    needs: [determine-environment, quality-check]
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: 🦋 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Install Flutter dependencies
+      - name: 📦 Install Dependencies
         run: flutter pub get
         working-directory: packages/app
 
-      - name: Build Flutter web app
+      - name: 🏗️ Build Web App
         run: flutter build web --release --web-renderer canvaskit
         working-directory: packages/app
 
-      - name: Setup Firebase project
-        id: firebase-setup
-        run: |
-          case ${{ github.ref }} in
-            refs/heads/main)
-              echo "firebase_project=modulo-squares-prod" >> $GITHUB_OUTPUT
-              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_PRODUCTION }}" >> $GITHUB_OUTPUT
-              ;;
-            refs/heads/staging)
-              echo "firebase_project=modulo-squares-staging" >> $GITHUB_OUTPUT
-              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_STAGING }}" >> $GITHUB_OUTPUT
-              ;;
-            refs/heads/develop)
-              echo "firebase_project=modulo-squares-dev" >> $GITHUB_OUTPUT
-              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_DEVELOPMENT }}" >> $GITHUB_OUTPUT
-              ;;
-          esac
-
-      - name: Deploy to Firebase Hosting
-        id: deploy
-        run: |
-          firebase use ${{ steps.firebase-setup.outputs.firebase_project }} --token ${{ steps.firebase-setup.outputs.firebase_token }}
-          firebase deploy --only hosting --token ${{ steps.firebase-setup.outputs.firebase_token }}
-          echo "url=https://${{ steps.firebase-setup.outputs.firebase_project }}.web.app" >> $GITHUB_OUTPUT
-
-      - name: Comment deployment URL on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Deployment Preview**\n\n✅ Successfully deployed to: https://${{ steps.firebase-setup.outputs.firebase_project }}.web.app\n\n**Environment:** ${{ github.ref == 'refs/heads/main' && 'Production' || github.ref == 'refs/heads/staging' && 'Staging' || 'Development' }}\n\n**Build:** ${{ github.sha }}\n\n---\n\n*This deployment will be available for 7 days*`
-            })
+          name: web-build
+          path: packages/app/build/web/
+          retention-days: 7
 
-  release:
-    name: Create Release
-    needs: build-and-deploy
+  # 📱 Build Mobile Apps
+  build-mobile:
+    name: 📱 Build Mobile Apps
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: quality-check
+    if: needs.determine-environment.outputs.should-deploy == 'true' && needs.determine-environment.outputs.environment == 'production'
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🦋 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+        working-directory: packages/app
+
+      - name: 🏗️ Build Android APK
+        run: flutter build apk --release
+        working-directory: packages/app
+
+      - name: 🏗️ Build Android AAB
+        run: flutter build appbundle --release
+        working-directory: packages/app
+
+      - name: 📤 Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: packages/app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: 📤 Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: packages/app/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # 🚀 Deploy to Firebase Hosting
+  deploy-web:
+    name: 🔥 Deploy Web App to Firebase (${{ needs.determine-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [determine-environment, quality-check, build-web]
+    if: needs.determine-environment.outputs.should-deploy == 'true'
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download Web Build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: packages/app/build/web/
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: 🔥 Deploy to Firebase
+        run: |
+          PROJECT_ID="${{ needs.determine-environment.outputs.environment == 'production' && 'modulo-squares-prod' || needs.determine-environment.outputs.environment == 'staging' && 'modulo-squares-staging' || 'modulo-squares-dev' }}"
+          TOKEN="${{ secrets[format('FIREBASE_TOKEN_{0}', needs.determine-environment.outputs.environment)] }}"
+          firebase use $PROJECT_ID --token $TOKEN
+          firebase deploy --only hosting --token $TOKEN
+
+  # 📦 Create Release
+  create-release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-mobile]
+    if: needs.determine-environment.outputs.environment == 'production' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: 📥 Download APK
+        uses: actions/download-artifact@v4
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          name: android-apk
+          path: .
 
-      - name: Install Flutter dependencies
-        run: flutter pub get
-        working-directory: packages/app
+      - name: 📥 Download AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: android-aab
+          path: .
 
-      - name: Build Android APK
-        run: flutter build apk --release
-        working-directory: packages/app
-
-      - name: Build Android AAB
-        run: flutter build appbundle --release
-        working-directory: packages/app
-
-      - name: Build iOS (without codesign)
-        run: flutter build ios --release --no-codesign
-        working-directory: packages/app
-
-      - name: Create Release
+      - name: 📦 Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -168,22 +236,53 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Android APK
+      - name: 📤 Upload APK
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: packages/app/build/app/outputs/flutter-apk/app-release.apk
+          asset_path: app-release.apk
           asset_name: app-release.apk
           asset_content_type: application/vnd.android.package-archive
 
-      - name: Upload Android AAB
+      - name: 📤 Upload AAB
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: packages/app/build/app/outputs/bundle/release/app-release.aab
+          asset_path: app-release.aab
           asset_name: app-release.aab
           asset_content_type: application/vnd.android.package-archive
+
+  # 📊 Deployment Summary
+  deployment-summary:
+    name: 📊 Deployment Summary (${{ needs.determine-environment.outputs.environment }})
+    runs-on: ubuntu-latest
+    needs: [determine-environment, deploy-web, create-release]
+    if: always() && needs.determine-environment.outputs.should-deploy == 'true'
+    steps:
+      - name: 📊 Generate Deployment Report
+        run: |
+          ENVIRONMENT="${{ needs.determine-environment.outputs.environment }}"
+          echo "## 🔥 Firebase Deployment Summary - $ENVIRONMENT Environment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|-----|" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            WEB_URL="https://modulo-squares-prod.web.app"
+          elif [[ "$ENVIRONMENT" == "staging" ]]; then
+            WEB_URL="https://modulo-squares-staging.web.app"
+          else
+            WEB_URL="https://modulo-squares-dev.web.app"
+          fi
+
+          echo "| 🌐 Web App | ${{ needs.deploy-web.result }} | $WEB_URL |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📱 Mobile Release | ${{ needs.create-release.result }} | GitHub Releases |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform**: 🔥 Firebase Hosting + GitHub Releases" >> $GITHUB_STEP_SUMMARY
