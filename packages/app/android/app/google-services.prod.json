@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "784677197785",
-    "project_id": "modulo-squares-dev",
-    "storage_bucket": "modulo-squares-dev.firebasestorage.app"
+    "project_number": "253948321735",
+    "project_id": "modulo-squares-prod",
+    "storage_bucket": "modulo-squares-prod.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:784677197785:android:d17a73b27367990061abc8",
+        "mobilesdk_app_id": "1:253948321735:android:f947b74aee2ce4a79ec3e2",
         "android_client_info": {
           "package_name": "com.nelsongrey.modulosquares.app.android"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDUMMY_API_KEY_DEV"
+          "current_key": "AIzaSyDUMMY_API_KEY_PROD"
         }
       ],
       "services": {

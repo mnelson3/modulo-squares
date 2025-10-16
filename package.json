@@ -23,7 +23,10 @@
     "format": "cd packages/functions && npm run format && cd ../web && npm run format",
     "check": "cd packages/functions && npm run check && cd ../web && npm run check",
     "clean": "cd packages/app && flutter clean && rm -rf build/ && cd ../functions && npm run clean && cd ../web && npm run clean",
-    "install:all": "npm install && cd packages/functions && npm install && cd ../web && npm install"
+    "install:all": "npm install && cd packages/functions && npm install && cd ../web && npm install",
+    "config:dev": "./scripts/switch-mobile-configs.sh dev",
+    "config:staging": "./scripts/switch-mobile-configs.sh staging",
+    "config:prod": "./scripts/switch-mobile-configs.sh prod"
   },
   "devDependencies": {
     "firebase": "^12.3.0",
