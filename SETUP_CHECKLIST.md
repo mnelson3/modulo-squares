@@ -33,7 +33,9 @@
 ## 🔄 In Progress / Next Steps
 
 ### GitHub Secrets Setup
-- [ ] Add FIREBASE_TOKEN to GitHub repository secrets
+- [ ] Add FIREBASE_TOKEN_DEV to GitHub repository secrets
+- [ ] Add FIREBASE_TOKEN_STAGING to GitHub repository secrets
+- [ ] Add FIREBASE_TOKEN_PROD to GitHub repository secrets
 - [ ] (Optional) Add Android signing secrets for releases
 
 ### Branch Protection Rules
@@ -51,12 +53,22 @@
 
 ### 1. GitHub Secrets Setup
 ```bash
-# Get Firebase token (already done)
+# Get Firebase tokens for each environment
+firebase use modulo-squares-dev
 firebase login:ci
+# Copy the token for FIREBASE_TOKEN_DEV
+
+firebase use modulo-squares-staging
+firebase login:ci
+# Copy the token for FIREBASE_TOKEN_STAGING
+
+firebase use modulo-squares-prod
+firebase login:ci
+# Copy the token for FIREBASE_TOKEN_PROD
 
 # Add to GitHub: Repository → Settings → Secrets and variables → Actions
-# Name: FIREBASE_TOKEN
-# Value: [paste the token from firebase login:ci]
+# Names: FIREBASE_TOKEN_DEV, FIREBASE_TOKEN_STAGING, FIREBASE_TOKEN_PROD
+# Values: [paste the respective tokens]
 ```
 
 ### 2. Branch Protection Setup
@@ -104,6 +116,7 @@ Feature Development:
 │   feature/*     │ -> │     develop     │ -> │     staging     │ -> │      main       │
 │   (local dev)   │    │   (DEV env)     │    │  (STAGING env)  │    │   (PROD env)    │
 │                 │    │ Tests + Deploy  │    │ Tests + Deploy  │    │ Tests + Deploy  │
+│                 │    │ FIREBASE_TOKEN_DEV    │ FIREBASE_TOKEN_STAGING │ FIREBASE_TOKEN_PROD │
 │                 │    │                 │    │ PR Reviews Req  │    │ PR Reviews Req  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
@@ -120,7 +133,7 @@ If you encounter any issues:
 
 Once all tasks are completed, your CI/CD pipeline will be fully operational with:
 - Automated testing and deployment
-- Environment-specific deployments
+- Environment-specific deployments with dedicated Firebase tokens
 - Branch protection and code quality gates
 - Mobile app release automation
 - Deployment previews for pull requests

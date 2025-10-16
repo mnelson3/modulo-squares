@@ -19,14 +19,17 @@ switch ($Environment) {
     "dev" {
         $FirebaseProject = "modulo-squares-dev"
         $FirebaseConfig = Join-Path $ProjectRoot "firebase.dev.json"
+        $FirebaseTokenVar = "FIREBASE_TOKEN_DEV"
     }
     "staging" {
         $FirebaseProject = "modulo-squares-staging"
         $FirebaseConfig = Join-Path $ProjectRoot "firebase.staging.json"
+        $FirebaseTokenVar = "FIREBASE_TOKEN_STAGING"
     }
     "prod" {
         $FirebaseProject = "modulo-squares-prod"
         $FirebaseConfig = Join-Path $ProjectRoot "firebase.prod.json"
+        $FirebaseTokenVar = "FIREBASE_TOKEN_PROD"
     }
 }
 
@@ -48,8 +51,9 @@ Copy-Item $FirebaseConfig (Join-Path $ProjectRoot "firebase.json") -Force
 Set-Location $ProjectRoot
 firebase use $FirebaseProject
 
-if ($env:FIREBASE_TOKEN) {
-    firebase deploy --only hosting --token $env:FIREBASE_TOKEN
+$token = [Environment]::GetEnvironmentVariable($FirebaseTokenVar)
+if ($token) {
+    firebase deploy --only hosting --token $token
 } else {
     firebase deploy --only hosting
 }

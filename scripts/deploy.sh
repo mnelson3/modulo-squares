@@ -25,14 +25,17 @@ case $ENVIRONMENT in
     dev)
         FIREBASE_PROJECT="modulo-squares-dev"
         FIREBASE_CONFIG="$PROJECT_ROOT/firebase.dev.json"
+        FIREBASE_TOKEN_VAR="FIREBASE_TOKEN_DEV"
         ;;
     staging)
         FIREBASE_PROJECT="modulo-squares-staging"
         FIREBASE_CONFIG="$PROJECT_ROOT/firebase.staging.json"
+        FIREBASE_TOKEN_VAR="FIREBASE_TOKEN_STAGING"
         ;;
     prod)
         FIREBASE_PROJECT="modulo-squares-prod"
         FIREBASE_CONFIG="$PROJECT_ROOT/firebase.prod.json"
+        FIREBASE_TOKEN_VAR="FIREBASE_TOKEN_PROD"
         ;;
 esac
 
@@ -54,8 +57,8 @@ cp "$FIREBASE_CONFIG" "$PROJECT_ROOT/firebase.json"
 cd "$PROJECT_ROOT"
 firebase use "$FIREBASE_PROJECT"
 
-if [ -n "$FIREBASE_TOKEN" ]; then
-    firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+if [ -n "${!FIREBASE_TOKEN_VAR}" ]; then
+    firebase deploy --only hosting --token "${!FIREBASE_TOKEN_VAR}"
 else
     firebase deploy --only hosting
 fi

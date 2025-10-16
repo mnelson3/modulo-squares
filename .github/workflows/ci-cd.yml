@@ -83,20 +83,23 @@ jobs:
           case ${{ github.ref }} in
             refs/heads/main)
               echo "firebase_project=modulo-squares-prod" >> $GITHUB_OUTPUT
+              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_PROD }}" >> $GITHUB_OUTPUT
               ;;
             refs/heads/staging)
               echo "firebase_project=modulo-squares-staging" >> $GITHUB_OUTPUT
+              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_STAGING }}" >> $GITHUB_OUTPUT
               ;;
             refs/heads/develop)
               echo "firebase_project=modulo-squares-dev" >> $GITHUB_OUTPUT
+              echo "firebase_token=${{ secrets.FIREBASE_TOKEN_DEV }}" >> $GITHUB_OUTPUT
               ;;
           esac
 
       - name: Deploy to Firebase Hosting
         id: deploy
         run: |
-          firebase use ${{ steps.firebase-setup.outputs.firebase_project }} --token ${{ secrets.FIREBASE_TOKEN }}
-          firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
+          firebase use ${{ steps.firebase-setup.outputs.firebase_project }} --token ${{ steps.firebase-setup.outputs.firebase_token }}
+          firebase deploy --only hosting --token ${{ steps.firebase-setup.outputs.firebase_token }}
           echo "url=https://${{ steps.firebase-setup.outputs.firebase_project }}.web.app" >> $GITHUB_OUTPUT
 
       - name: Comment deployment URL on PR

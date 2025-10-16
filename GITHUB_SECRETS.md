@@ -2,19 +2,40 @@
 
 ## Required Secrets
 
-### FIREBASE_TOKEN
-**Purpose**: Authenticates GitHub Actions with Firebase for deployments
+### Environment-Specific Firebase Tokens
+Each Firebase environment requires its own authentication token for security and access control.
+
+#### FIREBASE_TOKEN_DEV
+**Purpose**: Authenticates GitHub Actions with Firebase for DEV environment deployments
 
 **How to get it**:
 ```bash
-# Login to Firebase CLI
-firebase login
-
-# Generate CI token
+# Login to Firebase and select DEV project
+firebase use modulo-squares-dev
 firebase login:ci
 ```
 
-**Where to add it**: GitHub Repository → Settings → Secrets and variables → Actions → New repository secret
+#### FIREBASE_TOKEN_STAGING
+**Purpose**: Authenticates GitHub Actions with Firebase for STAGING environment deployments
+
+**How to get it**:
+```bash
+# Login to Firebase and select STAGING project
+firebase use modulo-squares-staging
+firebase login:ci
+```
+
+#### FIREBASE_TOKEN_PROD
+**Purpose**: Authenticates GitHub Actions with Firebase for PROD environment deployments
+
+**How to get it**:
+```bash
+# Login to Firebase and select PROD project
+firebase use modulo-squares-prod
+firebase login:ci
+```
+
+**Where to add them**: GitHub Repository → Settings → Secrets and variables → Actions → New repository secret
 
 ### Optional Secrets (for signed Android releases)
 
@@ -38,22 +59,24 @@ base64 -i your-keystore.jks
 
 ## Environment Setup
 
-The CI/CD pipeline automatically detects the environment based on the branch:
+The CI/CD pipeline automatically detects the environment based on the branch and uses the appropriate Firebase token:
 
-- `develop` → DEV environment (`modulo-squares-dev`)
-- `staging` → STAGING environment (`modulo-squares-staging`)
-- `main` → PROD environment (`modulo-squares-prod`)
+- `develop` → DEV environment (`FIREBASE_TOKEN_DEV`)
+- `staging` → STAGING environment (`FIREBASE_TOKEN_STAGING`)
+- `main` → PROD environment (`FIREBASE_TOKEN_PROD`)
 
 ## Testing the Setup
 
-1. **Push to develop branch**:
+1. **Add all three Firebase tokens to GitHub secrets**
+
+2. **Push to develop branch**:
    ```bash
    git checkout develop
    git push origin develop
    ```
 
-2. **Check GitHub Actions**: Go to Actions tab in your repository
+3. **Check GitHub Actions**: Go to Actions tab in your repository
 
-3. **Verify deployment**: Visit https://modulo-squares-dev.web.app
+4. **Verify deployment**: Visit https://modulo-squares-dev.web.app
 
 Repeat for `staging` and `main` branches.
