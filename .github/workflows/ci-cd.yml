@@ -104,13 +104,14 @@ jobs:
 
       - name: 🔄 Switch Mobile Configs
         run: npm run config:prod
+        working-directory: .
 
       - name: �📦 Install Dependencies
         run: flutter pub get
         working-directory: packages/app
 
       - name: 🏗️ Build Web App
-        run: flutter build web --release --web-renderer canvaskit
+        run: flutter build web --release
         working-directory: packages/app
 
       - name: 📤 Upload Build Artifacts
@@ -138,6 +139,7 @@ jobs:
 
       - name: 🔄 Switch Mobile Configs
         run: npm run config:${{ needs.determine-environment.outputs.environment }}
+        working-directory: .
 
       - name: �📦 Install Dependencies
         run: flutter pub get
