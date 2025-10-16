@@ -138,7 +138,9 @@ jobs:
           cache: true
 
       - name: 🔄 Switch Mobile Configs
-        run: npm run config:${{ needs.determine-environment.outputs.environment }}
+        run: |
+          CONFIG_ENV="${{ needs.determine-environment.outputs.environment == 'development' && 'dev' || needs.determine-environment.outputs.environment }}"
+          npm run config:$CONFIG_ENV
         working-directory: .
 
       - name: �📦 Install Dependencies
