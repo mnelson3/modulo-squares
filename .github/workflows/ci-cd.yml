@@ -144,11 +144,10 @@ jobs:
       - name: 📦 Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: � Authenticate Firebase
+      - name: 🔐 Authenticate Firebase
         run: |
-          PROJECT_ID="${{ needs.determine-environment.outputs.environment == 'production' && 'modulo-squares-prod' || needs.determine-environment.outputs.environment == 'staging' && 'modulo-squares-staging' || 'modulo-squares-dev' }}"
           TOKEN="${{ secrets[format('FIREBASE_TOKEN_{0}', needs.determine-environment.outputs.environment)] }}"
-          firebase use $PROJECT_ID --token $TOKEN
+          echo $TOKEN | firebase login:ci
 
       - name: �📦 Install FlutterFire CLI
         run: flutter pub global activate flutterfire_cli
