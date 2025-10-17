@@ -124,6 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [determine-environment, quality-check]
     if: needs.determine-environment.outputs.should-deploy == 'true'
+    environment: ${{ needs.determine-environment.outputs.environment }}
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
@@ -143,7 +144,13 @@ jobs:
       - name: 📦 Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: 📦 Install FlutterFire CLI
+      - name: � Authenticate Firebase
+        run: |
+          PROJECT_ID="${{ needs.determine-environment.outputs.environment == 'production' && 'modulo-squares-prod' || needs.determine-environment.outputs.environment == 'staging' && 'modulo-squares-staging' || 'modulo-squares-dev' }}"
+          TOKEN="${{ secrets[format('FIREBASE_TOKEN_{0}', needs.determine-environment.outputs.environment)] }}"
+          firebase use $PROJECT_ID --token $TOKEN
+
+      - name: �📦 Install FlutterFire CLI
         run: flutter pub global activate flutterfire_cli
         working-directory: packages/mobile
 
