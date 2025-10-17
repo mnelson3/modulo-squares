@@ -42,7 +42,7 @@
   },
   "hosting": {
     "target": "website",
-    "public": "packages/mobile/build/web",
+    "public": "packages/web/dist",
     "ignore": [
       "firebase.json",
       "**/.*",
