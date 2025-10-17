@@ -47,28 +47,28 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyDXho7IXqU_bt3jS3WvP_VsIYjJtWrs5Dg',
-    appId: '1:239807122511:web:89c06cdf09b0845900ee3a',
-    messagingSenderId: '1038873713695',
-    projectId: 'modulo-squares',
-    authDomain: 'modulo-squares.firebaseapp.com',
-    storageBucket: 'modulo-squares.firebasestorage.app',
+    appId: '1:784677197785:web:17eec81cc847f1af61abc8',
+    messagingSenderId: '784677197785',
+    projectId: 'modulo-squares-dev',
+    authDomain: 'modulo-squares-dev.firebaseapp.com',
+    storageBucket: 'modulo-squares-dev.firebasestorage.app',
     measurementId: 'G-KPX3GHW9VB',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDXho7IXqU_bt3jS3WvP_VsIYjJtWrs5Dg',
-    appId: '1:1038873713695:android:8cc29f252bb8b1e6bcc92a',
-    messagingSenderId: '1038873713695',
-    projectId: 'modulo-squares',
-    storageBucket: 'modulo-squares.firebasestorage.app',
+    appId: '1:784677197785:android:d17a73b27367990061abc8',
+    messagingSenderId: '784677197785',
+    projectId: 'modulo-squares-dev',
+    storageBucket: 'modulo-squares-dev.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDXho7IXqU_bt3jS3WvP_VsIYjJtWrs5Dg',
-    appId: '1:1038873713695:ios:fd144b35448ed1e6bcc92a',
-    messagingSenderId: '1038873713695',
-    projectId: 'modulo-squares',
-    storageBucket: 'modulo-squares.firebasestorage.app',
+    appId: '1:784677197785:ios:51104e6b575616cc61abc8',
+    messagingSenderId: '784677197785',
+    projectId: 'modulo-squares-dev',
+    storageBucket: 'modulo-squares-dev.firebasestorage.app',
     iosBundleId: 'com.nelsongrey.modulosquares.app.ios',
   );
 }
