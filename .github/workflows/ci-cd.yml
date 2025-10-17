@@ -151,7 +151,7 @@ jobs:
       - name: 🔧 Configure Firebase
         run: |
           TOKEN="${{ secrets[format('FIREBASE_TOKEN_{0}', needs.determine-environment.outputs.environment)] }}"
-          $HOME/.pub-cache/bin/flutterfire configure --project=${{ needs.determine-environment.outputs.environment == 'production' && 'modulo-squares-prod' || needs.determine-environment.outputs.environment == 'staging' && 'modulo-squares-staging' || 'modulo-squares-dev' }} --token=$TOKEN
+          $HOME/.pub-cache/bin/flutterfire configure --project=${{ needs.determine-environment.outputs.environment == 'production' && 'modulo-squares-prod' || needs.determine-environment.outputs.environment == 'staging' && 'modulo-squares-staging' || 'modulo-squares-dev' }} --platforms=android,ios --token=$TOKEN
         working-directory: packages/mobile
 
       - name: 🔄 Switch Mobile Configs
