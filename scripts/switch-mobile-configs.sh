@@ -16,8 +16,8 @@ if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
 fi
 
 # Android config switching
-ANDROID_SRC="packages/app/android/app/google-services.$ENVIRONMENT.json"
-ANDROID_DEST="packages/app/android/app/google-services.json"
+ANDROID_SRC="packages/mobile/android/app/google-services.$ENVIRONMENT.json"
+ANDROID_DEST="packages/mobile/android/app/google-services.json"
 
 if [ -f "$ANDROID_SRC" ]; then
     cp "$ANDROID_SRC" "$ANDROID_DEST"
@@ -28,8 +28,8 @@ else
 fi
 
 # iOS config switching
-IOS_SRC="packages/app/ios/Runner/GoogleService-Info.$ENVIRONMENT.plist"
-IOS_DEST="packages/app/ios/Runner/GoogleService-Info.plist"
+IOS_SRC="packages/mobile/ios/Runner/GoogleService-Info.$ENVIRONMENT.plist"
+IOS_DEST="packages/mobile/ios/Runner/GoogleService-Info.plist"
 
 if [ -f "$IOS_SRC" ]; then
     cp "$IOS_SRC" "$IOS_DEST"
