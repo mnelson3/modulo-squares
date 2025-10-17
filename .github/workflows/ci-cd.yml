@@ -147,7 +147,7 @@ jobs:
       - name: 🔐 Authenticate Firebase
         run: |
           TOKEN="${{ secrets[format('FIREBASE_TOKEN_{0}', needs.determine-environment.outputs.environment)] }}"
-          echo $TOKEN | firebase login:ci
+          firebase login:ci $TOKEN
 
       - name: �📦 Install FlutterFire CLI
         run: flutter pub global activate flutterfire_cli
