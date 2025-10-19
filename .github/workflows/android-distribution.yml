@@ -25,7 +25,7 @@ jobs:
   distribute-android:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+      name: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'DEVELOPMENT' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -61,10 +61,10 @@ jobs:
       - name: Extract AdMob configuration for production
         if: github.ref == 'refs/heads/main'
         run: |
-          # Read AdMob unit IDs from .env.production file
-          ADMOB_BANNER_ANDROID=$(grep "^ADMOB_BANNER_UNIT_ID_ANDROID=" .env.production | cut -d '=' -f2)
-          ADMOB_INTERSTITIAL_ANDROID=$(grep "^ADMOB_INTERSTITIAL_UNIT_ID_ANDROID=" .env.production | cut -d '=' -f2)
-          ADMOB_REWARDED_ANDROID=$(grep "^ADMOB_REWARDED_UNIT_ID_ANDROID=" .env.production | cut -d '=' -f2)
+          # Read AdMob unit IDs from .env.prod file
+          ADMOB_BANNER_ANDROID=$(grep "^ADMOB_BANNER_UNIT_ID_ANDROID=" .env.prod | cut -d '=' -f2)
+          ADMOB_INTERSTITIAL_ANDROID=$(grep "^ADMOB_INTERSTITIAL_UNIT_ID_ANDROID=" .env.prod | cut -d '=' -f2)
+          ADMOB_REWARDED_ANDROID=$(grep "^ADMOB_REWARDED_UNIT_ID_ANDROID=" .env.prod | cut -d '=' -f2)
           
           # Export as environment variables for the build script
           echo "ADMOB_BANNER_UNIT_ID=$ADMOB_BANNER_ANDROID" >> $GITHUB_ENV
@@ -73,7 +73,7 @@ jobs:
 
       - name: Build and distribute Android app
         env:
-          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'DEVELOPMENT' }}
         run: |
           cd packages/mobile
           ./distribute-android.sh ${{ github.event.inputs.build_type || 'debug' }} "${{ github.event.inputs.release_notes || format('Build from {0} - {1}', github.ref_name, github.sha) }}"
