@@ -6,6 +6,7 @@ import 'package:modulo/features/game/game_screen.dart';
 import 'package:modulo/core/di/service_locator.dart';
 import 'package:modulo/core/services/analytics_service.dart';
 import 'package:modulo/core/services/ad_service.dart';
+import 'package:modulo/core/services/purchase_service.dart';
 
 // Mock services for testing
 class MockAnalyticsService implements AnalyticsService {
@@ -18,11 +19,17 @@ class MockAdService implements AdService {
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
+class MockPurchaseService implements PurchaseService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
+
 void main() {
   setUpAll(() {
     // Setup minimal service locator for tests
     getIt.registerSingleton<AnalyticsService>(MockAnalyticsService());
     getIt.registerSingleton<AdService>(MockAdService());
+    getIt.registerSingleton<PurchaseService>(MockPurchaseService());
   });
 
   tearDownAll(() {

@@ -251,7 +251,7 @@ void main() {
       final result = board.move(0, 0, 0, 1);
       expect(result, isNotNull);
       expect(result?.grid[0][1].value, null); // Target becomes empty
-      expect(result?.grid[0][0].value, isNotNull); // Source respawns with new value
+      expect(result?.grid[0][0].value, null); // Source also becomes empty on perfect division
       expect(result?.score, board.score + 1);
     });
 
@@ -334,8 +334,8 @@ void main() {
 
       final result = board.slide(0, 0, 0, 1); // Slide right
       expect(result, isNotNull);
-      expect(result?.grid[0][3].value, (6 + 2) * (6 % 2)); // Collision with 6
-      expect(result?.grid[0][0].value, isNotNull); // Source respawns
+      expect(result?.grid[0][3].value, null); // Perfect division: target becomes empty
+      expect(result?.grid[0][0].value, null); // Source also becomes empty
       expect(result?.score, board.score + 1);
     });
 
@@ -366,7 +366,7 @@ void main() {
 
       final result = board.slide(0, 0, 0, 1); // Slide right
       expect(result, isNotNull);
-      expect(result?.grid[0][2].value, 2); // Should stop before obstacle
+      expect(result?.grid[0][1].value, 2); // Should stop before obstacle at position 1
       expect(result?.grid[0][0].value, null);
       expect(result?.score, board.score + 1);
     });
