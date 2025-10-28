@@ -1,0 +1,22 @@
+name: 'Setup Flutter'
+description: 'Setup Flutter SDK with caching'
+
+inputs:
+  flutter-version:
+    description: 'Flutter version to install'
+    required: true
+    default: '3.32.0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 🦋 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ inputs.flutter-version }}
+        cache: true
+
+    - name: 📦 Install Flutter Dependencies
+      run: flutter pub get
+      shell: bash
+      working-directory: packages/mobile
