@@ -32,11 +32,12 @@ Add the following **environment-specific** secrets to your GitHub repository:
 - `FIREBASE_TOKEN_STAGING`: Firebase CI token for STAGING environment
 - `FIREBASE_TOKEN_PRODUCTION`: Firebase CI token for PROD environment
 
-### Optional Secrets (for releases)
-- `ANDROID_KEYSTORE`: Base64 encoded Android keystore (for signed releases)
-- `ANDROID_KEYSTORE_PASSWORD`: Android keystore password
-- `ANDROID_KEY_ALIAS`: Android key alias
-- `ANDROID_KEY_PASSWORD`: Android key password
+### iOS Secrets (for TestFlight/App Store releases)
+- `IOS_CERTIFICATE`: Base64 encoded iOS distribution certificate (.p12)
+- `IOS_CERTIFICATE_PASSWORD`: iOS certificate password
+- `IOS_PROVISIONING_PROFILE`: Base64 encoded provisioning profile (.mobileprovision)
+- `FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD`: App-specific password for Apple ID
+- `IOS_TEAM_ID`: Apple Developer Team ID
 
 ## 🏗️ Branch Strategy
 
@@ -114,9 +115,55 @@ The CI pipeline runs:
 ## 📱 Mobile App Releases
 
 When pushing to `main`, the CI pipeline automatically:
-1. Builds Android APK and AAB
-2. Builds iOS (without codesigning)
+1. Builds Android APK and AAB (signed with keystore if provided)
+2. Builds iOS (with codesigning if certificates are configured)
 3. Creates a GitHub release with download links
+
+### Android Signing Setup
+
+For Android Google Play Store releases, you need to set up code signing:
+
+1. **Generate Keystore**:
+   ```bash
+   cd packages/mobile/android
+   ./generate_keystore.sh
+   ```
+
+2. **Configure Signing**: Copy `local.properties.example` to `local.properties` and update with your keystore details
+
+3. **CI/CD Secrets**: Add Android secrets listed above
+
+4. **Test Build**:
+   ```bash
+   flutter build appbundle --release
+   ```
+
+### iOS Code Signing Setup
+
+For iOS TestFlight/App Store releases, you need to:
+
+1. **Apple Developer Account**: Sign up at https://developer.apple.com
+2. **App ID**: Register `com.nelsongrey.modulosquares.app.ios`
+3. **Certificates**: Create iOS Distribution certificate
+4. **Provisioning Profile**: Create App Store distribution profile
+5. **CI Secrets**: Add iOS secrets listed above
+
+Run the setup script:
+```bash
+cd packages/mobile/ios
+./setup_codesigning.sh
+```
+
+### Fastlane Setup
+
+The project includes Fastlane configuration for automated iOS deployment:
+
+```bash
+cd packages/mobile/ios
+gem install fastlane
+fastlane beta    # Deploy to TestFlight
+fastlane release # Deploy to App Store
+```
 
 ## 🔧 Firebase Configuration
 

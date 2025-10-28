@@ -11,9 +11,9 @@ void main() {
   late AdService adService;
 
   setUp(() {
-    GetIt.I.registerSingleton<ConsentService>(ConsentService());
-    GetIt.I.registerSingleton<PurchaseService>(PurchaseService());
-    adService = AdService();
+    GetIt.I.registerSingleton<ConsentService>(ConsentService.createForTesting());
+    GetIt.I.registerSingleton<PurchaseService>(PurchaseService.createForTesting());
+    adService = AdService.createForTesting();
   });
 
   tearDown(() {

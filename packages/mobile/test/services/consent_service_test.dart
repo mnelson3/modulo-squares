@@ -7,7 +7,7 @@ void main() {
   late ConsentService consentService;
 
   setUp(() {
-    consentService = ConsentService();
+    consentService = ConsentService.createForTesting();
   });
 
   group('ConsentService', () {
@@ -114,7 +114,7 @@ void main() {
         consentService.getAttStatusDescription(),
       ];
 
-      await expectLater(Future.wait(futures), returnsNormally);
+      await Future.wait(futures);
     });
   });
 }

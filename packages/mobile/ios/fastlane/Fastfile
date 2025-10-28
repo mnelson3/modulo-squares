@@ -1,0 +1,78 @@
+# iOS Deployment with Fastlane
+# This directory contains Fastlane configuration for automated iOS builds and deployments
+
+# Install fastlane:
+# gem install fastlane
+
+# Usage:
+# cd packages/mobile/ios
+# fastlane beta  # Deploy to TestFlight
+# fastlane release  # Deploy to App Store
+
+# Fastfile
+default_platform(:ios)
+
+platform :ios do
+  desc "Deploy a new version to TestFlight"
+  lane :beta do
+    # Ensure clean git status
+    ensure_git_status_clean
+
+    # Increment build number
+    increment_build_number
+
+    # Build the app
+    build_app(
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./fastlane/builds",
+      output_name: "ModuloSquares-beta"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Deploy a new version to the App Store"
+  lane :release do
+    # Ensure clean git status
+    ensure_git_status_clean
+
+    # Increment build number
+    increment_build_number
+
+    # Build the app
+    build_app(
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./fastlane/builds",
+      output_name: "ModuloSquares-release"
+    )
+
+    # Upload to App Store
+    upload_to_app_store(
+      force: true,
+      reject_if_possible: true,
+      skip_metadata: false,
+      skip_screenshots: true,
+      languages: ['en-US'],
+      release_notes: {
+        'en-US' => "Bug fixes and improvements"
+      },
+      submit_for_review: false,
+      automatic_release: false,
+      precheck_include_in_app_purchases: false
+    )
+  end
+
+  desc "Run tests"
+  lane :test do
+    run_tests(
+      scheme: "Runner",
+      devices: ["iPhone 14"],
+      clean: true
+    )
+  end
+end

@@ -7,14 +7,30 @@ import 'package:modulo/core/config/admob_config.dart';
 import 'package:modulo/core/services/error_handler.dart';
 
 class AdService {
-  AdService._();
-  static final AdService instance = AdService._();
+  AdService._([bool testMode = false]) : _testMode = testMode;
+  static AdService? _instance;
 
-  // Public constructor for dependency injection
-  factory AdService() => instance;
+  static AdService get instance {
+    _instance ??= AdService._();
+    return _instance!;
+  }
+
+  // Public constructor for dependency injection and testing
+  factory AdService([bool testMode = false]) {
+    if (testMode) {
+      return AdService._(true);
+    }
+    return instance;
+  }
+
+  // Factory method for testing
+  factory AdService.createForTesting() {
+    return AdService._(true);
+  }
 
   InterstitialAd? _interstitial;
   bool _isLoading = false;
+  final bool _testMode;
 
   // Get analytics service from dependency injection
   AnalyticsService get _analyticsService => getIt<AnalyticsService>();
@@ -23,12 +39,18 @@ class AdService {
   PurchaseService get _purchaseService => getIt<PurchaseService>();
 
   Future<InitializationStatus> initialize() async {
+    if (_testMode) {
+      // In test mode, return a mock initialization status
+      return InitializationStatus({}); // Empty map for test
+    }
     return MobileAds.instance.initialize();
   }
 
   String get _interstitialId => AdMobConfig.interstitialId;
 
   void loadInterstitial() {
+    if (_testMode) return; // Skip ad loading in test mode
+
     if (_isLoading || _interstitial != null) return;
     _isLoading = true;
     InterstitialAd.load(

@@ -1,5 +1,13 @@
 name: 🌐 Web Deployment
 
+# This workflow deploys the web app to Firebase Hosting
+# 
+# Required Secrets:
+# - FIREBASE_TOKEN: Firebase CI token for deployment
+#   To generate: firebase login:ci
+#   Add to: Repository Settings > Secrets and variables > Actions
+#   Or to specific environments for production deployments
+
 on:
   push:
     branches:
@@ -54,9 +62,15 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          ENVIRONMENT="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || 'staging') }}"
-          if [ "$ENVIRONMENT" = "production" ]; then
-            firebase deploy --only hosting:prod --token $FIREBASE_TOKEN
-          else
-            firebase deploy --only hosting:staging --token $FIREBASE_TOKEN
+          # Check if Firebase token is available
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ FIREBASE_TOKEN secret is not configured"
+            echo "Please add FIREBASE_TOKEN to repository secrets or environment secrets"
+            exit 1
           fi
+          
+          ENVIRONMENT="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || 'staging') }}"
+          echo "🚀 Deploying to $ENVIRONMENT environment"
+          
+          # Deploy to the website target (configured in firebase.json)
+          firebase deploy --only hosting:website --token $FIREBASE_TOKEN
