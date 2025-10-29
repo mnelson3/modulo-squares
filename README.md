@@ -11,7 +11,7 @@ Modulo Squares is a strategic puzzle game played on a 4x4 grid where players mov
 ## 🏗️ Project Structure
 
 ```
-modulo-flutter-project/
+modulo-squares/
 ├── packages/
 │   ├── app/                    # Main Flutter application
 │   │   ├── lib/               # Flutter source code
@@ -177,7 +177,7 @@ lib/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd modulo-flutter-project
+cd modulo-squares
 
 # Install Flutter dependencies
 cd packages/app
@@ -349,7 +349,7 @@ To get a local copy up and running, follow these simple steps.
     ```
 2.  Navigate to the project directory:
     ```sh
-    cd modulo-flutter-project
+    cd modulo-squares
     ```
 3.  Install dependencies:
     ```sh
