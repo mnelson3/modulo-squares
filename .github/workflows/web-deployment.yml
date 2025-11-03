@@ -13,6 +13,7 @@ on:
     branches:
       - main
       - develop
+      - staging
     paths:
       - 'packages/web/**'
       - '.github/workflows/web-deployment.yml'
@@ -28,6 +29,7 @@ on:
         options:
         - staging
         - production
+        - development
 
 env:
   NODE_VERSION: '18'
@@ -36,7 +38,7 @@ jobs:
   deploy-web:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'STAGING' }}
+      name: ${{ github.event.inputs.environment == 'production' && 'PRODUCTION' || github.event.inputs.environment == 'staging' && 'STAGING' || 'DEVELOPMENT' }}
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
@@ -62,15 +64,31 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
+          # Determine environment and config
+          ENVIRONMENT="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'development') }}"
+          echo "🚀 Deploying to $ENVIRONMENT environment"
+
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            CONFIG_FILE="firebase.prod.json"
+            PROJECT_ID="modulo-squares-prod"
+          elif [[ "$ENVIRONMENT" == "staging" ]]; then
+            CONFIG_FILE="firebase.staging.json"
+            PROJECT_ID="modulo-squares-staging"
+          else
+            CONFIG_FILE="firebase.dev.json"
+            PROJECT_ID="modulo-squares-dev"
+          fi
+
           # Check if Firebase token is available
           if [ -z "$FIREBASE_TOKEN" ]; then
             echo "❌ FIREBASE_TOKEN secret is not configured"
             echo "Please add FIREBASE_TOKEN to repository secrets or environment secrets"
             exit 1
           fi
-          
-          ENVIRONMENT="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || 'staging') }}"
-          echo "🚀 Deploying to $ENVIRONMENT environment"
-          
+
+          # Copy environment-specific config
+          cp "$CONFIG_FILE" firebase.json
+
           # Deploy to the website target (configured in firebase.json)
-          firebase deploy --only hosting:website --token $FIREBASE_TOKEN
+          firebase use "$PROJECT_ID" --token "$FIREBASE_TOKEN"
+          firebase deploy --only hosting:website --token "$FIREBASE_TOKEN"

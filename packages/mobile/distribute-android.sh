@@ -37,14 +37,30 @@ echo "✅ APK built successfully: $APK_PATH"
 
 # Distribute to Firebase App Distribution
 echo "📤 Distributing to Firebase App Distribution..."
-if [[ -n "$FIREBASE_APP_ID_PRODUCTION" ]]; then
+if [[ -f "android/app/service-account-key.json" ]]; then
+    # Authenticate with service account
+    export GOOGLE_APPLICATION_CREDENTIALS="android/app/service-account-key.json"
+
+    # Get Firebase project and app ID based on environment
+    if [[ "$ENVIRONMENT" == "PRODUCTION" ]]; then
+        FIREBASE_PROJECT="modulo-squares-prod"
+        FIREBASE_APP_ID="1:253948321735:android:f947b74aee2ce4a79ec3e2"
+    elif [[ "$ENVIRONMENT" == "STAGING" ]]; then
+        FIREBASE_PROJECT="modulo-squares-staging"
+        FIREBASE_APP_ID="1:838061114925:android:9a9206d7065e2e3e229aa4"
+    else
+        FIREBASE_PROJECT="modulo-squares-dev"
+        FIREBASE_APP_ID="1:784677197785:android:d17a73b27367990061abc8"
+    fi
+
     firebase appdistribution:distribute "$APK_PATH" \
-        --app "$FIREBASE_APP_ID_PRODUCTION" \
+        --project "$FIREBASE_PROJECT" \
+        --app "$FIREBASE_APP_ID" \
         --groups "testers" \
         --release-notes "$RELEASE_NOTES"
     echo "✅ Successfully distributed to Firebase App Distribution"
 else
-    echo "⚠️ Warning: FIREBASE_APP_ID_PRODUCTION not set, skipping Firebase distribution"
+    echo "⚠️ Warning: Service account key not found, skipping Firebase distribution"
 fi
 
 echo "🎉 Android distribution completed!"

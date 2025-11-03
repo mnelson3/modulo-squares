@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+      - staging
     paths:
       - 'packages/mobile/**'
       - '.github/workflows/android-distribution.yml'
@@ -33,7 +34,7 @@ jobs:
   distribute-android:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'DEVELOPMENT' }}
+      name: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || github.ref == 'refs/heads/staging' && 'STAGING' || 'DEVELOPMENT' }}
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
@@ -63,10 +64,10 @@ jobs:
 
       - name: 🔐 Create Service Account Key File
         env:
-          SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           mkdir -p packages/mobile/android/app
-          echo "$SERVICE_ACCOUNT_KEY" > packages/mobile/android/app/service-account-key.json
+          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > packages/mobile/android/app/service-account-key.json
 
       - name: 🔧 Make Distribution Script Executable
         run: chmod +x packages/mobile/distribute-android.sh
@@ -86,7 +87,7 @@ jobs:
 
       - name: 🏗️ Build and Distribute Android App
         env:
-          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || 'DEVELOPMENT' }}
+          ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || github.ref == 'refs/heads/staging' && 'STAGING' || 'DEVELOPMENT' }}
         run: |
           cd packages/mobile
           ./distribute-android.sh ${{ github.event.inputs.build_type || 'debug' }} "${{ github.event.inputs.release_notes || format('Build from {0} - {1}', github.ref_name, github.sha) }}"
