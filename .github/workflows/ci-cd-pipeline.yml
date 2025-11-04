@@ -2,13 +2,24 @@ name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, staging]
+    branches:
+      - main
+      - develop
+      - staging
     paths:
-      - 'packages/**'
-      - '.github/workflows/**'
-      - 'firebase*.json'
+      - 'packages/mobile/**'
+      - 'packages/web/**'
+      - '.github/workflows/ci-cd-pipeline.yml'
       - 'pubspec.yaml'
       - 'package.json'
+      - 'firebase*.json'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (skip actual deployments)'
+        required: false
+        default: true
+        type: boolean
   pull_request:
     branches: [main, develop, staging]
     paths:
@@ -20,6 +31,7 @@ on:
 
 env:
   FLUTTER_VERSION: '3.32.0'
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' || contains(github.event.head_commit.message, '[DRY-RUN]') || contains(github.event.head_commit.message, '[SKIP-DEPLOY]') }}
   NODE_VERSION: '18'
 
 jobs:
@@ -71,9 +83,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: packages/web/package-lock.json
 
-      - name: 📦 Install Dependencies
-        run: npm ci
-        working-directory: packages/web
+      - name: � Check Dry Run Status
+        run: |
+          if [[ "${{ env.DRY_RUN }}" == "true" ]]; then
+            echo "🏃 DRY RUN MODE: Skipping actual deployments"
+            echo "This run will test the pipeline without consuming resources"
+          else
+            echo "🚀 LIVE MODE: Full deployment will proceed"
+          fi
 
       - name: 🏗️ Build Web App
         run: npm run build
@@ -113,32 +130,37 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: 🔥 Deploy to Firebase Hosting
+        if: env.DRY_RUN != 'true'
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           # Determine environment and config
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            ENV="prod"
+          ENVIRONMENT="${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'development' }}"
+          echo "🚀 Deploying to $ENVIRONMENT environment"
+
+          if [[ "$ENVIRONMENT" == "production" ]]; then
             CONFIG_FILE="firebase.prod.json"
             PROJECT_ID="modulo-squares-prod"
-          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            ENV="staging"
+          elif [[ "$ENVIRONMENT" == "staging" ]]; then
             CONFIG_FILE="firebase.staging.json"
             PROJECT_ID="modulo-squares-staging"
           else
-            ENV="dev"
             CONFIG_FILE="firebase.dev.json"
             PROJECT_ID="modulo-squares-dev"
           fi
 
-          echo "🚀 Deploying to $ENV environment ($PROJECT_ID)"
+          # Check if Firebase token is available
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ FIREBASE_TOKEN secret is not configured"
+            exit 1
+          fi
 
           # Copy environment-specific config
           cp "$CONFIG_FILE" firebase.json
 
-          # Deploy to Firebase
+          # Deploy to the website target (configured in firebase.json)
           firebase use "$PROJECT_ID" --token "$FIREBASE_TOKEN"
-          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+          firebase deploy --only hosting:website --token "$FIREBASE_TOKEN"
 
   # 📊 Deployment Summary
   deployment-summary:

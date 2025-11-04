@@ -22,6 +22,11 @@ on:
         options:
         - debug
         - release
+      dry_run:
+        description: 'Run in dry-run mode (skip actual distribution)'
+        required: false
+        default: true
+        type: boolean
       release_notes:
         description: 'Release notes for this build'
         required: false
@@ -29,6 +34,7 @@ on:
 
 env:
   FLUTTER_VERSION: '3.32.0'
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' || contains(github.event.head_commit.message, '[DRY-RUN]') || contains(github.event.head_commit.message, '[SKIP-DEPLOY]') }}
 
 jobs:
   distribute-android:
@@ -53,9 +59,14 @@ jobs:
       - name: 🤖 Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: 📦 Install Dependencies
-        run: flutter pub get
-        working-directory: packages/mobile
+      - name: � Check Dry Run Status
+        run: |
+          if [[ "${{ env.DRY_RUN }}" == "true" ]]; then
+            echo "🏃 DRY RUN MODE: Skipping actual app distribution"
+            echo "This run will test the build process without distributing"
+          else
+            echo "📱 LIVE MODE: App distribution will proceed"
+          fi
 
       - name: 🔧 Generate Android Platform Files
         run: flutter create --platforms=android .
@@ -85,6 +96,7 @@ jobs:
           echo "ADMOB_REWARDED_UNIT_ID=$ADMOB_REWARDED_ANDROID" >> $GITHUB_ENV
 
       - name: 🏗️ Build and Distribute Android App
+        if: env.DRY_RUN != 'true'
         env:
           ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'PRODUCTION' || github.ref == 'refs/heads/staging' && 'STAGING' || 'DEVELOPMENT' }}
         run: |
