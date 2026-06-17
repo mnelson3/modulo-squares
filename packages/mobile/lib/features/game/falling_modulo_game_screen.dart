@@ -807,12 +807,13 @@ class _FallingModuloGameScreenState extends State<FallingModuloGameScreen> {
         color: Colors.black.withValues(alpha: 0.80),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      child: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
@@ -886,7 +887,8 @@ class _FallingModuloGameScreenState extends State<FallingModuloGameScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildOverlayRule(IconData icon, String text) {
@@ -1040,8 +1042,8 @@ class _FallingModuloGameScreenState extends State<FallingModuloGameScreen> {
                         icon: Icons.calculate_outlined,
                         title: 'Scoring',
                         body:
-                            'Success → earn  falling number × bucket value  points.\n\n'
-                            'Miss → lose  falling number × bucket value × remainder  points.\n\n'
+                            'Success → earn falling number × bucket value points.\n\n'
+                            'Miss → lose falling number × bucket value × remainder points.\n\n'
                             'Tip: bucket 1 always divides any number — but scores 0. '
                             'Use it to avoid a big penalty when no other bucket fits.',
                       ),
